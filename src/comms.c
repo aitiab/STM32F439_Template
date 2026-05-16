@@ -9,11 +9,11 @@ uint8_t validate_CTRL_Packet(uint8_t byte, uint8_t buffer[])
 	}
 	
 	// Extract the bits for each output
-	// reverse the shift
-	buffer[0] = (byte >> LIGHT_Bit_Pos);
-	buffer[1] = (byte >> HEATER_Bit_Pos);
-	buffer[2] = (byte >> COOLING_Bit_Pos);
-	buffer[3] = (byte >> FAN_Bit_Pos);
+	// reverse the shift. Get the first bit
+	buffer[0] = (byte >> LIGHT_Bit_Pos) & 1;
+	buffer[1] = (byte >> HEATER_Bit_Pos) & 1;
+	buffer[2] = (byte >> COOLING_Bit_Pos) & 1;
+	buffer[3] = (byte >> FAN_Bit_Pos) & 1;
 	
 	return 1;
 }

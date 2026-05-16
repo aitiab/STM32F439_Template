@@ -26,14 +26,17 @@
 	 
 	 MAX CNT possible is 2^{16}-1 = 65535. Therefore max time is ~6.5 seconds
 */
-#define TIM_PRESCALER (8399U)
-#define EXPECTED_COUNT_CLOCK (84000000U /(TIM_PRESCALER + 1))
+#define TIM6_PRESCALER (8399U)
+#define EXPECTED_COUNT_CLOCK_TIM6 (84000000U /(TIM6_PRESCALER + 1)) // 10kHz count clock
+
+#define TIM7_PRESCALER (83999U)		// TIM7 Prescaler
+#define EXPECTED_COUNT_CLOCK_TIM7 (84000000U / (TIM7_PRESCALER + 1))		// 1kHz count clock
 
 #define TIM6_TARGET_FREQUENCY (0.25f)
-#define TIM6_ONE_QUARTER_HZ_Count (uint16_t)((EXPECTED_COUNT_CLOCK/TIM6_TARGET_FREQUENCY))							// Ticks required = Clock frequency / Target frequency
+#define TIM6_ONE_QUARTER_HZ_Count (uint16_t)((EXPECTED_COUNT_CLOCK_TIM6/TIM6_TARGET_FREQUENCY))							// Ticks required = Clock frequency / Target frequency
 
-#define TIM7_TARGET_FREQUENCY (1U)
-#define TIM7_ONE_HZ_Count (uint16_t) (EXPECTED_COUNT_CLOCK/TIM7_TARGET_FREQUENCY)												// Ticks required = clock frequency / Target frequency
+#define TIM7_TARGET_FREQUENCY (0.1f)			// 0.1Hz = 1 tick every 10 seconds
+#define TIM7_TEN_SECOND_Count (uint16_t) (EXPECTED_COUNT_CLOCK_TIM7/TIM7_TARGET_FREQUENCY)												// Ticks required = clock frequency / Target frequency
 
 //================================ CALCULATION DEFINES END ================================//
 
@@ -50,18 +53,6 @@
 
 
 //================================ FLAGS PACKET DEFINES END ================================//
-
-
-
-
-// Struct for managing the counts for the different 'timers' that run using the 1 second tick of TIM7
-typedef struct {
-	uint8_t fan;							// Count for timer for Fan off
-	uint8_t UART;							// Count for timer for UART
-	uint8_t sw;								// Count for Timer for Switch
-} TICK_TIMERS;
-
-
 
 
 

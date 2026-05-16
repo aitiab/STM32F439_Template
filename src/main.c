@@ -23,7 +23,7 @@ volatile Sensors sensors = {{0,0,{0}}, 0};	// Initialise Sensors struct. Set def
 
 volatile uint8_t COMM_FLAG = 0;
 
-volatile uint8_t CONTROL_MODE_FLAG = CONTROL_AUTO_MODE;				// Flags for determining control mode. initally set to AUTO MODE.
+volatile uint8_t CONTROL_MODE_FLAG = CONTROL_AUTO_MODE_Msk;				// Flags for determining control mode. initally set to AUTO MODE.
 volatile uint8_t TIM7_RUNNING_FLAG = 0b0000;						// Flags for determining why timer TIM7 is running
 
 //******************************************************************************//
@@ -244,14 +244,14 @@ void TIM6_Setup(void)
 	
 	// Configure TIMER 6 registers
 	TIM6->CR1 &= ~(TIM_CR1_CEN_Msk);					// Ensure timer 6 is off.
-	TIM6->PSC &= ~(TIM_PSC_PSC_Msk);  				// Clear Pre-scaler
-	TIM6->PSC |= (TIM_PRESCALER);						// Set prescaler. Remember final prescaler that divides the source clock is PSC + 1
+	TIM6->PSC &= ~(TIM_PSC_PSC_Msk);  					// Clear Pre-scaler
+	TIM6->PSC |= (TIM6_PRESCALER);						// Set prescaler. Remember final prescaler that divides the source clock is PSC + 1
 	TIM6->ARR &= ~(TIM_ARR_ARR_Msk);					// Clear the auto reload register
 	TIM6->ARR |= TIM6_ONE_QUARTER_HZ_Count;
 
 	// Need to enable the interrupt
 	
-	TIM6->CR1 |= (1 << TIM_CR1_CEN_Pos);			// Enable Clock
+	TIM6->CR1 |= (1 << TIM_CR1_CEN_Pos);				// Enable Clock
 }
 
 // Not complete.
@@ -273,10 +273,10 @@ void TIM7_Setup(void)
 	
 	// Configure TIMER 7 registers
 	TIM7->CR1 &= ~(TIM_CR1_CEN_Msk);					// Ensure timer 6 is off.
-	TIM7->PSC &= ~(TIM_PSC_PSC_Msk);  				// Clear Pre-scaler
-	TIM7->PSC |= (TIM_PRESCALER);							// Set prescaler. Remember final prescaler that divides the source clock is PSC + 1
+	TIM7->PSC &= ~(TIM_PSC_PSC_Msk);  					// Clear Pre-scaler
+	TIM7->PSC |= (TIM7_PRESCALER);						// Set prescaler. Remember final prescaler that divides the source clock is PSC + 1
 	TIM7->ARR &= ~(TIM_ARR_ARR_Msk);					// Clear the auto reload register
-	TIM7->ARR |= TIM7_ONE_HZ_Count;
+	TIM7->ARR |= TIM7_TEN_SECOND_Count;
 
 	// Need to enable the interrupt
 	
