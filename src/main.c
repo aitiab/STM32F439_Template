@@ -108,6 +108,7 @@ int main(void)
 		*/
 		Read_Potentiometer(&(sensors.temperature.ADC_Value),&(sensors.temperature.Value));
 		
+		HMS_Poll_Light_Switch(&outputs.Light);
 		
 		/*
 			Below contains the logic for processing the control commands send by PC.
@@ -128,7 +129,9 @@ int main(void)
 				COMM_FLAG &= ~(RECIEVE_CMD_FROM_PC_Msk);												// Reset the CMD recieved flag as below the buffer is processed.
 				if (Process_PC_CMD(&uart_rx, &outputs) != 0)										// If CMD was validated and the desired outputs extracted. Then turn on the timer.
 				{
-					
+					HMS_UART_Set_Light(&outputs.Light, outputs.Light);
+					TIM7_Disable;	// Disable
+					TIM7->CNT = 0;	// Reset count. 				
 					TIM7_RUNNING_FLAG = (1 << TIMER_UART_CTRL_Pos);								// Indicate that TIM7 is running for the UART CONTROL MODE
 					TIM7_ENABLE;																// Start TIM7
 					CONTROL_MODE_FLAG = (1 << CONTROL_UART_MODE_Pos);							// Indicate HMS is in UART_CTRL_MODE. Turns off AUTO_MODE
@@ -155,7 +158,8 @@ int main(void)
 				}
 				else if (TIM7_RUNNING_FLAG & TIMER_FAN_OFF_Msk)													// If user manually turned fan back on but fan off timer is running
 				{
-					TIM7_Disable;																			// Turn off the TIM7
+					TIM7_Disable;
+					TIM7->CNT = 0;	// Reset count.
 					TIM7_RUNNING_FLAG &= ~(TIMER_FAN_OFF_Msk);														// Clear the flag
 				}
 			}

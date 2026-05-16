@@ -79,7 +79,6 @@ void AUTO_CONTROL(volatile Sensors *sensors, volatile Outputs *outputs)
 void Hardware_Temperature_Control(volatile Outputs *outputs)
 {
 	FAN_SET(outputs->Fan);							// Keep one source of truth for the hardware state of the fan. The func updates the internal state in switches.c
-	LIGHT_SET(outputs->Light);						// Keep one source of truth for the hardware state of the light. The func updates the internal state in switches.c
 	if (outputs->Cooling == 1)
 	{
 		// Turn on cooling
