@@ -1981,7 +1981,7 @@ void boardSupport_init(void);
 void delay_software_ms(uint32_t);
 void delay_software_us(uint32_t);
 # 7 "./inc\\switches.h" 2
-# 28 "./inc\\switches.h"
+# 36 "./inc\\switches.h"
 typedef struct {
     uint8_t prevIdle;
     uint8_t falling;
@@ -1989,6 +1989,9 @@ typedef struct {
     uint32_t lockoutEnd;
 } SwitchCtx_t;
 
+
+void FAN_SET(uint8_t state);
+void LIGHT_SET(uint8_t state);
 
 uint8_t HMS_Poll_Fan_Switch(volatile uint8_t *o_fan_status, uint8_t hardware_update);
 void HMS_UART_Set_Light(volatile uint8_t *o_light_status, uint8_t uartLightCommand);
@@ -2009,8 +2012,31 @@ static SwitchCtx_t s_fanSw = {1U, 0U, 0U, 0xFFFFFFFFU};
 static uint8_t s_lightEnabled = 0U;
 static uint8_t s_fanEnabled = 1U;
 
+
 static uint32_t s_uartLightOffTime = 0U;
 static uint8_t s_uartLightOffValid = 0U;
+
+
+
+
+
+
+void FAN_SET(uint8_t state)
+{
+    (void)(state ? (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->ODR &= ~((0x1U << (1U)))) : ( ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->ODR |= (0x1U << (1U))));
+    s_fanEnabled = state;
+}
+
+
+
+
+
+void LIGHT_SET(uint8_t state)
+{
+    (void)(state ? (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->ODR &= ~((0x1U << (9U)))) : ( ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->ODR |= (0x1U << (9U))));
+    s_lightEnabled = state;
+}
+
 
 
 
@@ -2023,7 +2049,7 @@ void configureRCC_SW(void)
     ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->AHB1RSTR &= ~((0x1U << (0U)) | (0x1U << (1U)));
     __asm("NOP"); __asm("NOP");
 }
-# 57 "src/switches.c"
+# 80 "src/switches.c"
 void configureGPIO_SW(void)
 {
 
@@ -2133,9 +2159,9 @@ uint8_t HMS_Poll_Fan_Switch(volatile uint8_t *o_fan_status, uint8_t hardware_upd
         if (hardware_update == 1)
     {
      if (s_fanEnabled)
-       (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->ODR |= (0x1U << (1U)));
+       (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->ODR &= ~((0x1U << (1U))));
      else
-       (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->ODR &= ~(0x1U << (1U)));
+       (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->ODR |= (0x1U << (1U)));
     }
 
     return 1;
@@ -2161,7 +2187,7 @@ void HMS_Poll_Light_Switch(volatile uint8_t *o_light_status)
         {
             s_lightEnabled = 0U;
             *o_light_status = 0U;
-            (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->ODR &= ~(0x1U << (9U)));
+            (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->ODR |= (0x1U << (9U)));
             return;
         }
 
@@ -2172,20 +2198,20 @@ void HMS_Poll_Light_Switch(volatile uint8_t *o_light_status)
             {
                 s_lightEnabled = 0U;
                 *o_light_status = 0U;
-                (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->ODR &= ~(0x1U << (9U)));
+                (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->ODR |= (0x1U << (9U)));
             }
             else
             {
                 s_lightEnabled = 1U;
                 *o_light_status = 1U;
-                (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->ODR |= (0x1U << (9U)));
+                (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->ODR &= ~((0x1U << (9U))));
             }
         }
         else
         {
             s_lightEnabled = 0U;
             *o_light_status = 0U;
-            (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->ODR &= ~(0x1U << (9U)));
+            (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->ODR |= (0x1U << (9U)));
         }
     }
 }
@@ -2197,13 +2223,13 @@ void HMS_UART_Set_Light(volatile uint8_t *o_light_status, uint8_t uartLightComma
     {
         s_lightEnabled = 1U;
         *o_light_status = 1U;
-        (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->ODR |= (0x1U << (9U)));
+        (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->ODR &= ~((0x1U << (9U))));
     }
     else
     {
         s_lightEnabled = 0U;
         *o_light_status = 0U;
-        (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->ODR &= ~(0x1U << (9U)));
+        (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->ODR |= (0x1U << (9U)));
 
         s_uartLightOffTime = g_msTick;
         s_uartLightOffValid = 1U;

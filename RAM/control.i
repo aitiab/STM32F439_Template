@@ -2021,7 +2021,7 @@ void ADC3_Setup(void);
 void Read_Potentiometer(volatile uint16_t *ADC_Value, volatile float *t_value);
 # 11 "./inc\\control.h" 2
 # 1 "./inc\\switches.h" 1
-# 28 "./inc\\switches.h"
+# 36 "./inc\\switches.h"
 typedef struct {
     uint8_t prevIdle;
     uint8_t falling;
@@ -2030,6 +2030,9 @@ typedef struct {
 } SwitchCtx_t;
 
 
+void FAN_SET(uint8_t state);
+void LIGHT_SET(uint8_t state);
+
 uint8_t HMS_Poll_Fan_Switch(volatile uint8_t *o_fan_status, uint8_t hardware_update);
 void HMS_UART_Set_Light(volatile uint8_t *o_light_status, uint8_t uartLightCommand);
 void HMS_Poll_Light_Switch(volatile uint8_t *o_light_status);
@@ -2037,7 +2040,7 @@ void configureSysTick(void);
 void configureGPIO_SW(void);
 void configureRCC_SW(void);
 # 12 "./inc\\control.h" 2
-# 27 "./inc\\control.h"
+# 30 "./inc\\control.h"
 typedef struct {
  uint16_t ADC_Value;
  float Value;
@@ -2111,27 +2114,20 @@ void AUTO_CONTROL(volatile Sensors *sensors, volatile Outputs *outputs)
 
  if (sensors->temperature.Value < 22.0)
  {
-  if (outputs->Cooling != 0 || outputs->Heater != 1)
-  {
-   outputs->Cooling = 0;
-   outputs->Heater = 1;
-  }
+
+  outputs->Cooling = 0;
+  outputs->Heater = 1;
  }
  else if(sensors->temperature.Value > 24.0)
  {
-  if (outputs->Cooling != 1 || outputs->Heater != 0)
-  {
-   outputs->Cooling = 1;
-   outputs->Heater = 0;
-  }
+
+  outputs->Cooling = 1;
+  outputs->Heater = 0;
  }
  else
  {
-  if (outputs->Cooling != 0 || outputs->Heater != 0)
-  {
-   outputs->Cooling = 0;
-   outputs->Heater = 0;
-  }
+  outputs->Cooling = 0;
+  outputs->Heater = 0;
  }
 
 
@@ -2168,20 +2164,13 @@ void Configure_Heater_Cooling_GPIO(void)
  ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->OSPEEDR &= ~((0x3U << (16U)));
  ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->PUPDR &= ~((0x3U << (16U)));
 
- ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->ODR |= (0x1U << (8U));
- ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->ODR |= (0x1U << (8U));
+ ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->ODR |= (!(0U) << (8U));
+ ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->ODR |= (!(0U) << (8U));
 }
 
 void Hardware_Temperature_Control(volatile Outputs *outputs)
 {
- if (outputs->Fan == 1)
- {
-  (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->ODR |= (0x1U << (1U)));
- }
- else
- {
-  (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->ODR &= ~(0x1U << (1U)));
- }
+ FAN_SET(outputs->Fan);
 
  if (outputs->Cooling == 1)
  {

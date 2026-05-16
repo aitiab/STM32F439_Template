@@ -2026,7 +2026,7 @@ void ADC3_Setup(void);
 void Read_Potentiometer(volatile uint16_t *ADC_Value, volatile float *t_value);
 # 11 "./inc\\control.h" 2
 # 1 "./inc\\switches.h" 1
-# 28 "./inc\\switches.h"
+# 36 "./inc\\switches.h"
 typedef struct {
     uint8_t prevIdle;
     uint8_t falling;
@@ -2035,6 +2035,9 @@ typedef struct {
 } SwitchCtx_t;
 
 
+void FAN_SET(uint8_t state);
+void LIGHT_SET(uint8_t state);
+
 uint8_t HMS_Poll_Fan_Switch(volatile uint8_t *o_fan_status, uint8_t hardware_update);
 void HMS_UART_Set_Light(volatile uint8_t *o_light_status, uint8_t uartLightCommand);
 void HMS_Poll_Light_Switch(volatile uint8_t *o_light_status);
@@ -2042,7 +2045,7 @@ void configureSysTick(void);
 void configureGPIO_SW(void);
 void configureRCC_SW(void);
 # 12 "./inc\\control.h" 2
-# 27 "./inc\\control.h"
+# 30 "./inc\\control.h"
 typedef struct {
  uint16_t ADC_Value;
  float Value;
@@ -2088,7 +2091,9 @@ void TIM7_Setup(void);
 volatile UART_TX uart_tx = {{0},0,0,0};
 volatile UART_RX uart_rx = {{0},0,0, 0};
 
-volatile Outputs outputs = {0, 0, 0, 0};
+
+
+volatile Outputs outputs = {0U, 0U, 1U, 0U};
 volatile Sensors sensors = {{0,0,{0}}, 0};
 
 
@@ -2121,9 +2126,8 @@ int main(void)
  configureSysTick();
  Configure_Heater_Cooling_GPIO();
 
- (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->ODR &= ~(0x1U << (9U)));
- (((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->ODR &= ~(0x1U << (1U)));
-
+ FAN_SET(1U);
+ LIGHT_SET(0U);
 
   while (1)
   {
@@ -2142,7 +2146,7 @@ int main(void)
     try_count --;
    }
   }
-# 82 "src/main.c"
+# 83 "src/main.c"
   if ((COMM_FLAG & (1 << (0U))) == 1)
   {
    COMM_FLAG &= ~((1 << (0U)));
@@ -2156,7 +2160,7 @@ int main(void)
 
 
   Read_Potentiometer(&(sensors.temperature.ADC_Value),&(sensors.temperature.Value));
-# 109 "src/main.c"
+# 110 "src/main.c"
   if ((COMM_FLAG & (1 << (1U))) != 0 && (CONTROL_MODE_FLAG & (1 << (1U))) == 0)
   {
    if (sensors.temperature.Value > 15 && sensors.temperature.Value < 30)
@@ -2232,7 +2236,7 @@ void USART3_IRQHandler(void)
   }
  }
 }
-# 192 "src/main.c"
+# 193 "src/main.c"
 void TIM7_IRQHandler(void)
 {
  if ((((TIM_TypeDef *) (0x40000000U + 0x1400U))->SR & (0x1U << (0U))) != 0)
@@ -2249,7 +2253,7 @@ void TIM7_IRQHandler(void)
   }
  }
 }
-# 216 "src/main.c"
+# 217 "src/main.c"
 void TIM6_DAC_IRQHandler(void)
 {
  if ((((TIM_TypeDef *) (0x40000000U + 0x1000U))->SR & (0x1U << (0U))) != 0)

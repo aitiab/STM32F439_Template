@@ -52,9 +52,8 @@ int main(void)
 	configureSysTick();
 	Configure_Heater_Cooling_GPIO();
 	
-	LIGHT_OFF();
-	FAN_OFF();
-	
+	FAN_SET(FAN_INITIAL_STATE);
+	LIGHT_SET(LIGHT_INITAL_STATE);
 	
   while (1)
   {

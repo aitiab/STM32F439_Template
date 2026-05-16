@@ -30,8 +30,31 @@ static SwitchCtx_t s_fanSw   = {1U, 0U, 0U, 0xFFFFFFFFU};
 static uint8_t s_lightEnabled = LIGHT_INITAL_STATE;
 static uint8_t s_fanEnabled   = FAN_INITIAL_STATE;           // Default on. Match AUTO MODE state.
 
+
 static uint32_t s_uartLightOffTime = 0U;
 static uint8_t s_uartLightOffValid = 0U;
+
+
+// ============================================================
+// Use set funcs to keep one source of truth for hardware state of FAN.
+// The func will update the internal state kept in switches. 
+// ============================================================
+void FAN_SET(uint8_t state)
+{
+    (void)(state ? (GPIOB->ODR &= ~(GPIO_ODR_OD1_Msk)) : ( GPIOB->ODR |= GPIO_ODR_OD1_Msk));    // state = 0 or 1. Active low output.
+    s_fanEnabled = state;
+}
+
+// ============================================================
+// Use set funcs to keep one source of truth for hardware state of Light.
+// The func will update the internal state kept in switches. 
+// ============================================================
+void LIGHT_SET(uint8_t state)
+{
+    (void)(state ? (GPIOA->ODR &= ~(GPIO_ODR_OD9_Msk)) : ( GPIOA->ODR |= GPIO_ODR_OD9_Msk));    // state = 0 or 1. Active low output.
+    s_lightEnabled = state;
+}
+
 
 // ============================================================
 // RCC � enable clocks for GPIOA and GPIOB

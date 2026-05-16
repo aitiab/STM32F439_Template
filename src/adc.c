@@ -2,18 +2,19 @@
 
 void Read_Potentiometer(volatile uint16_t *ADC_Value, volatile float *t_value)
 {
-	volatile uint16_t time_out = 1000;
+	// Conversion time is 492 cycles. At 42MHz ADC clock, conversion time is 11.7us. Therefore 1000 is sufficiently large timeout value.
+	volatile uint16_t time_out = 1000;									
 	
-	ADC3->CR2 |= ADC_CR2_SWSTART;
+	ADC3->CR2 |= ADC_CR2_SWSTART;												// Start conversion of regular channels. Cleared by hardware when conversion starts.
 	
-	while ((ADC3->SR & ADC_SR_EOC) == 0x00 && time_out > 0)   																		// Wait for end of conversion. Conversion time is 492 cycles
+	while ((ADC3->SR & ADC_SR_EOC) == 0x00 && time_out > 0)   	// Wait for end of conversion (EOC). Conversion time is 492 cycles
 	{
 		time_out--;
 	}
 	
-	if (time_out > 0)																																							// If time_out is not 0 then ADC successfully converted potentiometer signal
+	if (time_out > 0)																						// If time_out is not 0 then ADC successfully converted potentiometer signal
 	{
-			*ADC_Value = (ADC3->DR & 0x0000FFFF);																	// Read the data. Also resets the SR_EOC
+			*ADC_Value = (ADC3->DR & 0x0000FFFF);										// Read the data. Also resets the SR_EOC
 			*t_value = Convert_ADC_to_Temperature(*ADC_Value);
 	}
 }
@@ -65,10 +66,9 @@ void ADC3_Setup(void)
 	ADC3->SQR3 |= (8 << ADC_SQR3_SQ1_Pos);		// Set first conversion in regular sequence as channel 8
 	
 	ADC3->SMPR2 |= (0b111 << ADC_SMPR2_SMP8_Pos);		// Cycles for conversion = 480 + 12 = 492 cycles per conversion. Frequency = 42MHz/492 cycles = 85365 Hz
-
-	ADC3->CR2 |= (ADC_CR2_ADON_Msk);					// ADC On.
-	ADC3->CR2 &= ~(ADC_CR2_SWSTART_Msk); 			// 0b0 = Disable conversion on the regular channels. Cleared by hardware when conversion starts. Needs ADON to be 1.
 	
+	ADC3->CR2 &= ~(ADC_CR2_SWSTART_Msk); 			// 0b0 = Disable conversion on the regular channels. Cleared by hardware when conversion starts. Needs ADON to be 1.
+	ADC3->CR2 |= (ADC_CR2_ADON_Msk);					// ADC On.
 	
 	// Timer to trigger conversion?
 	// Sufficiently fast enough to detect changes in potentiometer

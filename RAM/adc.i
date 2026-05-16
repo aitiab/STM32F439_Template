@@ -1985,6 +1985,7 @@ void Read_Potentiometer(volatile uint16_t *ADC_Value, volatile float *t_value);
 
 void Read_Potentiometer(volatile uint16_t *ADC_Value, volatile float *t_value)
 {
+
  volatile uint16_t time_out = 1000;
 
  ((ADC_TypeDef *) ((0x40000000U + 0x00010000U) + 0x2200U))->CR2 |= (0x1U << (30U));
@@ -2049,9 +2050,8 @@ void ADC3_Setup(void)
 
  ((ADC_TypeDef *) ((0x40000000U + 0x00010000U) + 0x2200U))->SMPR2 |= (0b111 << (24U));
 
- ((ADC_TypeDef *) ((0x40000000U + 0x00010000U) + 0x2200U))->CR2 |= ((0x1U << (0U)));
  ((ADC_TypeDef *) ((0x40000000U + 0x00010000U) + 0x2200U))->CR2 &= ~((0x1U << (30U)));
-
+ ((ADC_TypeDef *) ((0x40000000U + 0x00010000U) + 0x2200U))->CR2 |= ((0x1U << (0U)));
 
 
 

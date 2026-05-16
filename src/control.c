@@ -111,14 +111,7 @@ void Configure_Heater_Cooling_GPIO(void)
 
 void Hardware_Temperature_Control(volatile Outputs *outputs)
 {
-	if (outputs->Fan == 1)
-	{
-		FAN_ON();									// Use switches' macro. Avoid making multiple source of truth
-	}
-	else
-	{
-		FAN_OFF();								    // Use switches' macro. Avoid making multiple source of truth
-	}
+	FAN_SET(outputs->Fan);							// Keep one source of truth for the hardware state of the fan. The func updates the internal state in switches.c
 
 	if (outputs->Cooling == 1)
 	{
