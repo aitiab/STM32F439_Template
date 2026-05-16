@@ -39,17 +39,27 @@ int main(void)
 	// Bring up the GPIO for the power regulators.
 	//boardSupport_init();
 	
-	//volatile uint16_t currentTemperature = 0;
+	__disable_irq();						// Disable global interrupts until everything is set up
 	
 	TIM6_Setup();
 	TIM7_Setup();
-	ADC3_Setup();
 	UART3_Configure();
+	configureSysTick();
+
+	// Set priorities of interrupt based on how often they occur.
+	NVIC_SetPriority(TIM6_DAC_IRQn, 3);			// Set priority of TIM6 interrupt to 3 (higher than TIM7 as it happens more often 4 sec tick)
+	NVIC_SetPriority(TIM7_IRQn, 4);				// Set priority of TIM7 interrupt to 4 (lower than TIM6 as it happens less often 10 sec tick)
+	NVIC_SetPriority(USART3_IRQn, 2);			// Set priority of UART interrupt to 2 (higher than TIM6 and TIM7). Not sure why but sense it maybe more important.
+	NVIC_SetPriority(SysTick_IRQn, 1);			// Set priority of SysTick interrupt to 1 (highest priority). Needed otherwise will miss the timing.
+
+	__enable_irq();						// Enable global interrupts after setting up everything
+
+	UART_ENABLE;		// Enable UART after setting up interrupts.
+	TIM6_ENABLE;		// Enable TIM6 after setting up interrupts. Will tick every 4 seconds.
 	
-	
+	ADC3_Setup();
 	configureRCC_SW();
 	configureGPIO_SW();
-	configureSysTick();
 	Configure_Heater_Cooling_GPIO();
 	
 	FAN_SET(FAN_INITIAL_STATE);
@@ -96,15 +106,15 @@ int main(void)
 		
 		
 		/*
-			 Below contains the logic for processing the control commands send by PC.
-			 As a control command will have control over the HMS for 10 seconds, the program will not process any new commands recieved in that period.
-			 However, data recieved is saved to the buffer. Which circles around itself.
-			 However when the 10 seconds is over, the program will process the first valid command in its buffer.
-		
-		// Logic about commands from PC.
-		// Only process the commands if not already in UART CTRL mode.
-		// If within the temp range and the commands are valid the code will raise UART CONTROL MODE flag and outputs will contain the target states
-		// After the code, the program will explicitly commit the outputs to the hardware.
+			Below contains the logic for processing the control commands send by PC.
+			As a control command will have control over the HMS for 10 seconds, the program will not process any new commands recieved in that period.
+			However, data recieved is saved to the buffer. Which circles around itself.
+			However when the 10 seconds is over, the program will process the first valid command in its buffer.
+
+			UART CONTROL is allowed for The temperature range 15 < x < 30.
+			
+			If within the temp range and the commands are valid the code will raise UART CONTROL MODE flag and outputs will contain the target states
+			After the code, the program will explicitly commit the outputs to the hardware.
 		*/
 		
 		if ((COMM_FLAG & RECIEVE_CMD_FROM_PC_Msk) != 0 && (CONTROL_MODE_FLAG & CONTROL_UART_MODE_Msk) == 0)
@@ -116,7 +126,7 @@ int main(void)
 				{
 					
 					TIM7_RUNNING_FLAG = (1 << TIMER_UART_CTRL_Pos);								// Indicate that TIM7 is running for the UART CONTROL MODE
-					TIM7->CR1 |= TIM_CR1_CEN_Msk;																	// Start TIM7
+					TIM7_ENABLE;																// Start TIM7
 					CONTROL_MODE_FLAG = (1 << CONTROL_UART_MODE_Pos);							// Indicate HMS is in UART_CTRL_MODE. Turns off AUTO_MODE
 				}
 			}
@@ -137,11 +147,11 @@ int main(void)
 				if (outputs.Fan == 0)																										// If user turned of the fan
 				{
 					TIM7_RUNNING_FLAG = (1 << TIMER_FAN_OFF_Pos);													// Indicate TIM7 is running for the Fan off period
-					TIM7->CR1 |= TIM_CR1_CEN_Msk;
+					TIM7_ENABLE;
 				}
 				else if (TIM7_RUNNING_FLAG & TIMER_FAN_OFF_Msk)													// If user manually turned fan back on but fan off timer is running
 				{
-					TIM7->CR1 &= ~(TIM_CR1_CEN_Msk);																			// Turn off the TIM7
+					TIM7_Disable;																			// Turn off the TIM7
 					TIM7_RUNNING_FLAG &= ~(TIMER_FAN_OFF_Msk);														// Clear the flag
 				}
 			}
@@ -162,14 +172,16 @@ void USART3_IRQHandler(void)
 {
 	if (USART3->SR & USART_SR_RXNE_Msk)						// Recieved data is ready to be read.
 	{
-		uart_rx.buffer[(uart_rx.emptyPos++) % UART_BUFFER_SIZE] = (uint8_t)(USART3->DR & 0xFFU);
+		// Read the byte into the buffer. The buffer is circular. The read of DR will clear the RXNE flag.
+		uart_rx.buffer[(uart_rx.emptyPos++) % UART_BUFFER_SIZE] = (uint8_t)(USART3->DR & 0xFFU);		
 		uart_rx.state = 1;
 	}
 	if (USART3->SR & USART_SR_IDLE_Msk)
 	{
 		// In case it causes issues
 		// https://www.reddit.com/r/C_Programming/comments/1aizjhj/should_you_cast_functions_where_you_dont_use_the/
-		(void)USART3->SR;																	// Reset the IDLE Flag
+		// Reset the IDLE Flag by read SR and then DR.
+		(void)USART3->SR;																	
 		(void)USART3->DR;
 		if (uart_rx.state == 1)											// If previously recieving then change to finished recieving
 		{
@@ -218,14 +230,14 @@ void TIM6_DAC_IRQHandler(void)
 {
 	if ((TIM6->SR & TIM_SR_UIF_Msk) != 0)
 	{
-		TIM6->SR &= ~(TIM_SR_UIF_Msk);											// Clear update interrupt flag. Needed so timer can continue.
+		TIM6->SR &= ~(TIM_SR_UIF_Msk);								// Clear update interrupt flag. Needed so timer can continue.
 		COMM_FLAG |= SEND_UPDATE_TO_PC_Msk;
 	}
 }
 //=====================================FUNCTION TIM6 DAC IRQHANDLER END=====================================//
 
 
-// Not complete.
+
 void TIM6_Setup(void)
 {
 	// Enable TIMER 6 on APB1 Bus.
@@ -249,12 +261,12 @@ void TIM6_Setup(void)
 	TIM6->ARR &= ~(TIM_ARR_ARR_Msk);					// Clear the auto reload register
 	TIM6->ARR |= TIM6_ONE_QUARTER_HZ_Count;
 
-	// Need to enable the interrupt
-	
-	TIM6->CR1 |= (1 << TIM_CR1_CEN_Pos);				// Enable Clock
+	TIM6->DIER |= (0b1 << TIM_DIER_UIE_Pos);			// 0b1 enables update event interrupt.
+
+	// When handling the interrupt, the UIF update interrupt flag must be set to 0 by software.
 }
 
-// Not complete.
+
 void TIM7_Setup(void)
 {
 	// Enable TIMER 7 on APB1 Bus.
@@ -279,6 +291,8 @@ void TIM7_Setup(void)
 	TIM7->ARR |= TIM7_TEN_SECOND_Count;
 
 	// Need to enable the interrupt
-	
+	TIM7->DIER |= (0b1 << TIM_DIER_UIE_Pos);			// 0b1 enables update event interrupt.
 	TIM7->CR1 |= (TIM_CR1_OPM_Msk);						// Set to one-pulse mode
+
+	// When handling the interrupt, the UIF update interrupt flag must be set to 0 by software.
 }

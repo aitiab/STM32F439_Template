@@ -49,9 +49,11 @@
 #define TIMER_UART_CTRL_Pos (2U)
 #define TIMER_UART_CTRL_Msk (1 << TIMER_UART_CTRL_Pos)					// 0b0100
 
+//================================ FLAGS DEFINES END ================================//
 
-
-//================================ FLAGS PACKET DEFINES END ================================//
+#define TIM6_ENABLE   (TIM6->CR1 |= TIM_CR1_CEN_Msk)
+#define TIM7_ENABLE   (TIM7->CR1 |= TIM_CR1_CEN_Msk)
+#define TIM7_Disable  (TIM7->CR1 &= ~(TIM_CR1_CEN_Msk))
 
 
 

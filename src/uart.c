@@ -153,8 +153,12 @@ void UART3_Configure(void)
 	USART3->BRR &= ~(USART_BRR_DIV_Mantissa_Msk | USART_BRR_DIV_Fraction_Msk); // Clear the Baud Rate register first
 	USART3->BRR |= ((45U << USART_BRR_DIV_Mantissa_Pos) | (9U << USART_BRR_DIV_Fraction_Pos)); // USARTDIV = 42MHz / (16 * BAUDRATE) = 45.57291667.     16*0.57291667 = 9.166666667
 	
-	// Configuration completed above. Enable USART, Transmitter and reciever.
-	// NEED TO ENABLE INTERRUPTS.
-	USART3->CR1 |= (USART_CR1_UE_Msk | USART_CR1_TE_Msk | USART_CR1_RE);
+	
+	USART3->CR1 |= (0b1 << USART_CR1_RXNEIE_Pos); // Enable RXNE interrupt. Will trigger when ORE=1 or RXNE = 1
+	// RXNE is set by hardware when recieved data is ready to be read.
+	// RXNE is cleared by a read to the USART_DR register. 
+
+	USART3->CR1 |= (0b1 << USART_CR1_IDLEIE_Pos); // Enable IDLE interrupt. Will trigger when IDLE line is detected.
+	// IDLE is set to 1 by hardware when idle line bound. Cleared by a read to SR registerister followed by a read to DR register
 }
 //-------------------------UART3_CONFIGURE FUNCTION END-------------------------//

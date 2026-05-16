@@ -10,6 +10,10 @@
 #define UART_BUFFER_SIZE (20U)
 #define UART_QUEUE_SIZE (20U)
 
+// Enables the USART, Transmitter and reciever.
+#define UART_ENABLE (USART3->CR1 |= (USART_CR1_UE_Msk | USART_CR1_TE_Msk | USART_CR1_RE));
+
+
 typedef struct {
 	uint8_t queue [UART_QUEUE_SIZE];
 	uint8_t curPos;						// Index of next item in queue
