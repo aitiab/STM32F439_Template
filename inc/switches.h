@@ -6,6 +6,9 @@
 #include "boardSupport.h"
 #include "stm32f439xx.h"
 
+#define LIGHT_INITAL_STATE  0U
+#define FAN_INITIAL_STATE   1U  
+
 // ============================================================
 // TIMING
 // ============================================================

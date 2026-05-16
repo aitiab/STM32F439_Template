@@ -16,7 +16,6 @@
 #include "boardSupport.h"
 #include "stm32f439xx.h"
 #include "control.h"
-#include "switches.h"
 
 //================================ CALCULATION DEFINES START ================================//
 // Below insert defines for calculations

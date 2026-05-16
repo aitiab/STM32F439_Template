@@ -17,8 +17,10 @@
 volatile UART_TX uart_tx = {{0},0,0,0};
 volatile UART_RX uart_rx = {{0},0,0, 0};
 
-volatile Outputs outputs = {0, 0, 0, 0}; 		// Initialise Outputs struct. Set default state as off (0).
-volatile Sensors sensors = {{0,0,{0}}, 0};	// Initialise Sensors struct. Set default state at 0. The inner {0,0,{0}} is for the temperature struct inside.
+// Outputs: Heater, Cooling, Fan and Light
+// Fan is inital set to 1 (on)
+volatile Outputs outputs = {HEATER_INITAL_STATE, COOLING_INITAL_STATE, FAN_INITIAL_STATE, LIGHT_INITAL_STATE}; 				// Initialise Outputs struct. Set default state as off (0).
+volatile Sensors sensors = {{0,0,{0}}, 0};				// Initialise Sensors struct. Set default state at 0. The inner {0,0,{0}} is for the temperature struct inside.
 // volatile Switches switches = {0, 0}; 				// Initialise Switches struct. Set default state at off (0).
 
 volatile uint8_t COMM_FLAG = 0;
@@ -48,7 +50,7 @@ int main(void)
 	configureRCC_SW();
 	configureGPIO_SW();
 	configureSysTick();
-	configure_Heater_Cooling_GPIO();
+	Configure_Heater_Cooling_GPIO();
 	
 	LIGHT_OFF();
 	FAN_OFF();

@@ -55,27 +55,20 @@ void AUTO_CONTROL(volatile Sensors *sensors, volatile Outputs *outputs)
 	//---------------------------------------------------------------------------//
 	if (sensors->temperature.Value < 22.0)						// If temperature is less than 22 degrees, then heater is on
 	{
-		if (outputs->Cooling != 0 || outputs->Heater != 1)			// If Heater is not on (or if cooling is on) then turn on heater and turn cooling off
-		{
-			outputs->Cooling = 0;
-			outputs->Heater = 1;
-		}
+		// turn on heater and turn cooling off
+		outputs->Cooling = 0;
+		outputs->Heater = 1;
 	}
 	else if(sensors->temperature.Value > 24.0)				// If temperature is greater than 24 degrees
 	{
-		if (outputs->Cooling != 1 || outputs->Heater != 0)			// If Heater is not off (or if cooling is off) then turn off heater and turn cooling on
-		{
-			outputs->Cooling = 1;
-			outputs->Heater = 0;
-		}
+		// then turn off heater and turn cooling on
+		outputs->Cooling = 1;
+		outputs->Heater = 0;
 	}
 	else																						// If temperature is within hystersis band then ensure cooling and heater is off
 	{
-		if (outputs->Cooling != 0 || outputs->Heater != 0)
-		{
-			outputs->Cooling = 0;
-			outputs->Heater = 0;
-		}
+		outputs->Cooling = 0;
+		outputs->Heater = 0;
 	}
 	
 	//---------------------------------------------------------------------------//
@@ -89,14 +82,14 @@ void Configure_Heater_Cooling_GPIO(void)
 	// Heater Output is on PF8
 	// Cooling Output is on PB8
 	// Enable RCC Clocks for GPIOF and GPIOB
-	RCC->AHB1ENR |= (RCC_ABH1ENR_GPIOFEN | RCC_AHB1ENR_GPIOBENR);
+	RCC->AHB1ENR |= (RCC_AHB1ENR_GPIOFEN_Msk | RCC_AHB1ENR_GPIOBEN_Msk);
 
 	// Reset the GPIO ports
-	RCC->AHB1RSTR |= (RCC_AHB1RSTR_GPIOFRST | RCC_AHB1RSTR_GPIOBRST);
+	RCC->AHB1RSTR |= (RCC_AHB1RSTR_GPIOFRST_Msk | RCC_AHB1RSTR_GPIOBRST_Msk);
 	__asm("NOP"); __asm("NOP");
 
 	// Clear reset
-	RCC->AHB1RSTR &= ~(RCC_AHB1RSTR_GPIOFRST | RCC_AHB1RSTR_GPIOBRST);
+	RCC->AHB1RSTR &= ~(RCC_AHB1RSTR_GPIOFRST_Msk | RCC_AHB1RSTR_GPIOBRST_Msk);
 	__asm("NOP"); __asm("NOP");
 
 	// Configure GPIOF8 and GPIOB8
@@ -112,8 +105,8 @@ void Configure_Heater_Cooling_GPIO(void)
 	GPIOB->OSPEEDR &= ~(GPIO_OSPEEDR_OSPEED8_Msk);			// 0b00 = Low speed which is fine for LEDs
 	GPIOB->PUPDR &= ~(GPIO_PUPDR_PUPD8_Msk); 				// Not needed.
 
-	GPIOF->ODR |= GPIO_ODR_OD8_Msk;							// Outputs are active low. Set to 1 to turn off at inital.
-	GPIOB->ODR |= GPIO_ODR_OD8_Msk;							// Outputs are active low. Set to 1 to turn off at inital.
+	GPIOF->ODR |= (!(HEATER_INITAL_STATE) << GPIO_ODR_OD8_Pos);		    // Outputs are active low. If state = 0 then set ODR to 1 to turn off.
+	GPIOB->ODR |= (!(COOLING_INITAL_STATE) << GPIO_ODR_OD8_Pos);		// Outputs are active low. If state = 0 then set ODR to 1 to turn off.
 }
 
 void Hardware_Temperature_Control(volatile Outputs *outputs)

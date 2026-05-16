@@ -8,6 +8,7 @@
 #include "uart.h"
 #include "comms.h"
 #include "adc.h"
+#include "switches.h"
 
 //================================ FLAGS DEFINES START ================================//
 // Below are defines useful for setting the CONTROL MODE
@@ -20,6 +21,9 @@
 #define CONTROL_UART_MODE_Msk (1 << CONTROL_UART_MODE_Pos)			// 0b0010
 
 //================================ FLAGS PACKET DEFINES END ================================//
+
+#define HEATER_INITAL_STATE   0U
+#define COOLING_INITAL_STATE  0U
 
 
 // Another struct just for temperature. Keeps the other structs more meaningful.
@@ -54,6 +58,8 @@ typedef struct {
 void Prepare_Msg_To_PC(volatile Outputs *outputs, volatile Sensors *sensors, volatile UART_TX *uart_tx);
 uint8_t Process_PC_CMD(volatile UART_RX *uart_rx, volatile Outputs *outputs);
 void AUTO_CONTROL(volatile Sensors *sensors, volatile Outputs *outputs);
+void Configure_Heater_Cooling_GPIO(void);
+void Hardware_Temperature_Control(volatile Outputs *outputs);
 
 
 #endif

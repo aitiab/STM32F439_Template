@@ -2035,7 +2035,7 @@ void ADC3_Setup(void)
  ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->MODER |= (0b11 << (20U));
  ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->PUPDR &= ~((0x3U << (20U)));
 
- ((ADC_TypeDef *) ((0x40000000U + 0x00010000U) + 0x2200U))->CR1 |= ((0x1U << (5U)));
+
  ((ADC_TypeDef *) ((0x40000000U + 0x00010000U) + 0x2200U))->CR1 &= ~((0x1U << (8U)));
  ((ADC_TypeDef *) ((0x40000000U + 0x00010000U) + 0x2200U))->CR1 &= ~((0x3U << (24U)));
 
@@ -2044,7 +2044,7 @@ void ADC3_Setup(void)
 
  ((ADC_TypeDef *) ((0x40000000U + 0x00010000U) + 0x2200U))->SQR1 &= ~((0xFU << (20U)));
 
- ((ADC_TypeDef *) ((0x40000000U + 0x00010000U) + 0x2200U))->SQR3 &= ((0x1FU << (0U)));
+ ((ADC_TypeDef *) ((0x40000000U + 0x00010000U) + 0x2200U))->SQR3 &= ~((0x1FU << (0U)));
  ((ADC_TypeDef *) ((0x40000000U + 0x00010000U) + 0x2200U))->SQR3 |= (8 << (0U));
 
  ((ADC_TypeDef *) ((0x40000000U + 0x00010000U) + 0x2200U))->SMPR2 |= (0b111 << (24U));

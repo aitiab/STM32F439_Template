@@ -1976,7 +1976,7 @@ void boardSupport_init(void);
 void delay_software_ms(uint32_t);
 void delay_software_us(uint32_t);
 # 7 "./inc\\comms.h" 2
-# 38 "./inc\\comms.h"
+# 40 "./inc\\comms.h"
 void ASCII_Extract(volatile float *t_Val, volatile char t_ASCII[]);
 
 void create_HMS_to_PC_Packet(volatile uint8_t o_light, volatile uint8_t o_heater, volatile uint8_t o_fan,
@@ -1993,10 +1993,12 @@ uint8_t validate_CTRL_Packet(uint8_t byte, uint8_t buffer[])
   return 0;
  }
 
- buffer[0] = byte & (1 << (7U));
- buffer[1] = byte & (1 << (6U));
- buffer[2] = byte & (1 << (5U));
- buffer[3] = byte & (1 << (4U));
+
+
+ buffer[0] = (byte >> (5U)) & 1;
+ buffer[1] = (byte >> (4U)) & 1;
+ buffer[2] = (byte >> (3U)) & 1;
+ buffer[3] = (byte >> (2U)) & 1;
 
  return 1;
 }
@@ -2028,8 +2030,8 @@ void create_HMS_to_PC_Packet(volatile uint8_t o_light, volatile uint8_t o_heater
 
 
 
- packet[9] = (0b01000001) | (o_light << (7U)) | (o_heater << (6U));
- packet[9] |= ((o_cooling << (5U)) | (o_fan << (4U)));
+ packet[9] = (0b01000001) | (o_light << (5U)) | (o_heater << (4U));
+ packet[9] |= ((o_cooling << (3U)) | (o_fan << (2U)));
 }
 
 

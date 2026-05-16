@@ -2007,7 +2007,7 @@ static SwitchCtx_t s_fanSw = {1U, 0U, 0U, 0xFFFFFFFFU};
 
 
 static uint8_t s_lightEnabled = 0U;
-static uint8_t s_fanEnabled = 0U;
+static uint8_t s_fanEnabled = 1U;
 
 static uint32_t s_uartLightOffTime = 0U;
 static uint8_t s_uartLightOffValid = 0U;

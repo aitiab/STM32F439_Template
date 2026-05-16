@@ -2139,5 +2139,6 @@ void UART3_Configure(void)
  ((USART_TypeDef *) (0x40000000U + 0x4800U))->BRR |= ((45U << (4U)) | (9U << (0U)));
 
 
+
  ((USART_TypeDef *) (0x40000000U + 0x4800U))->CR1 |= ((0x1U << (13U)) | (0x1U << (3U)) | (0x1U << (2U)));
 }
