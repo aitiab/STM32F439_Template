@@ -81,3 +81,71 @@ void AUTO_CONTROL(volatile Sensors *sensors, volatile Outputs *outputs)
 	//---------------------------------------------------------------------------//
 }
 //=====================================FUNCTION AUTO CONTROL END=====================================//
+
+
+
+void Configure_Heater_Cooling_GPIO(void)
+{
+	// Heater Output is on PF8
+	// Cooling Output is on PB8
+	// Enable RCC Clocks for GPIOF and GPIOB
+	RCC->AHB1ENR |= (RCC_ABH1ENR_GPIOFEN | RCC_AHB1ENR_GPIOBENR);
+
+	// Reset the GPIO ports
+	RCC->AHB1RSTR |= (RCC_AHB1RSTR_GPIOFRST | RCC_AHB1RSTR_GPIOBRST);
+	__asm("NOP"); __asm("NOP");
+
+	// Clear reset
+	RCC->AHB1RSTR &= ~(RCC_AHB1RSTR_GPIOFRST | RCC_AHB1RSTR_GPIOBRST);
+	__asm("NOP"); __asm("NOP");
+
+	// Configure GPIOF8 and GPIOB8
+	GPIOF->MODER &= ~(GPIO_MODER_MODER8_Msk);
+	GPIOF->MODER |= (0b01 << GPIO_MODER_MODER8_Pos); 		// 0b01 = Output
+	GPIOF->OTYPER &= ~(GPIO_OTYPER_OT8);					// 0b0 = Push-pull. (GND to VDD)
+	GPIOF->OSPEEDR &= ~(GPIO_OSPEEDR_OSPEED8_Msk);			// 0b00 = Low speed which is fine for LEDs
+	GPIOF->PUPDR &= ~(GPIO_PUPDR_PUPD8_Msk); 				// Not needed.
+	
+	GPIOB->MODER &= ~(GPIO_MODER_MODER8_Msk);
+	GPIOB->MODER |= (0b01 << GPIO_MODER_MODER8_Pos); 		// 0b01 = Output
+	GPIOB->OTYPER &= ~(GPIO_OTYPER_OT8);					// 0b0 = Push-pull. (GND to VDD)
+	GPIOB->OSPEEDR &= ~(GPIO_OSPEEDR_OSPEED8_Msk);			// 0b00 = Low speed which is fine for LEDs
+	GPIOB->PUPDR &= ~(GPIO_PUPDR_PUPD8_Msk); 				// Not needed.
+
+	GPIOF->ODR |= GPIO_ODR_OD8_Msk;							// Outputs are active low. Set to 1 to turn off at inital.
+	GPIOB->ODR |= GPIO_ODR_OD8_Msk;							// Outputs are active low. Set to 1 to turn off at inital.
+}
+
+void Hardware_Temperature_Control(volatile Outputs *outputs)
+{
+	if (outputs->Fan == 1)
+	{
+		FAN_ON();									// Use switches' macro. Avoid making multiple source of truth
+	}
+	else
+	{
+		FAN_OFF();								    // Use switches' macro. Avoid making multiple source of truth
+	}
+
+	if (outputs->Cooling == 1)
+	{
+		// Turn on cooling
+		GPIOB->ODR &= ~(GPIO_ODR_OD8_Msk);			// Active low output. Set to 0 to turn on.
+	}
+	else
+	{
+		// Turn off cooling
+		GPIOB->ODR |= GPIO_ODR_OD8_Msk;				// Active low output. Set to 1 to turn off.
+	}
+
+	if (outputs->Heater == 1)
+	{
+		// Turn on heater
+		GPIOF->ODR &= ~(GPIO_ODR_OD8_Msk);			// Active low output. Set to 0 to turn on.
+	}
+	else
+	{
+		// Turn off heater
+		GPIOF->ODR |= GPIO_ODR_OD8_Msk;				// Active low output. Set to 1 to turn off.
+	}
+}

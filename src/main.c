@@ -48,6 +48,7 @@ int main(void)
 	configureRCC_SW();
 	configureGPIO_SW();
 	configureSysTick();
+	configure_Heater_Cooling_GPIO();
 	
 	LIGHT_OFF();
 	FAN_OFF();
@@ -150,11 +151,9 @@ int main(void)
 		
 		// AUTO and UART Control mode only set the output status in Outputs struct.
 		// Below the func will apply the outputs to hardware. Its a single source of hardware change for temperature control
-		// Hardware_Temperature_Control(&outputs)
+		Hardware_Temperature_Control(&outputs);
   }
 }
-
-
 
 
 
