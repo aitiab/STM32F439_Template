@@ -1978,7 +1978,7 @@ void delay_software_us(uint32_t);
 # 7 "./inc\\control.h" 2
 
 # 1 "./inc\\uart.h" 1
-# 13 "./inc\\uart.h"
+# 17 "./inc\\uart.h"
 typedef struct {
  uint8_t queue [(20U)];
  uint8_t curPos;

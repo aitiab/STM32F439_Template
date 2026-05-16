@@ -1977,12 +1977,7 @@ void boardSupport_init(void);
 void delay_software_ms(uint32_t);
 void delay_software_us(uint32_t);
 # 7 "./inc\\uart.h" 2
-
-
-
-
-
-
+# 17 "./inc\\uart.h"
 typedef struct {
  uint8_t queue [(20U)];
  uint8_t curPos;
@@ -2139,6 +2134,10 @@ void UART3_Configure(void)
  ((USART_TypeDef *) (0x40000000U + 0x4800U))->BRR |= ((45U << (4U)) | (9U << (0U)));
 
 
+ ((USART_TypeDef *) (0x40000000U + 0x4800U))->CR1 |= (0b1 << (5U));
 
- ((USART_TypeDef *) (0x40000000U + 0x4800U))->CR1 |= ((0x1U << (13U)) | (0x1U << (3U)) | (0x1U << (2U)));
+
+
+ ((USART_TypeDef *) (0x40000000U + 0x4800U))->CR1 |= (0b1 << (4U));
+
 }

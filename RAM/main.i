@@ -1983,7 +1983,7 @@ void delay_software_us(uint32_t);
 
 
 # 1 "./inc\\uart.h" 1
-# 13 "./inc\\uart.h"
+# 17 "./inc\\uart.h"
 typedef struct {
  uint8_t queue [(20U)];
  uint8_t curPos;
@@ -2080,7 +2080,7 @@ void AUTO_CONTROL(volatile Sensors *sensors, volatile Outputs *outputs);
 void Configure_Heater_Cooling_GPIO(void);
 void Hardware_Temperature_Control(volatile Outputs *outputs);
 # 19 "./inc\\main.h" 2
-# 60 "./inc\\main.h"
+# 62 "./inc\\main.h"
 void TIM6_Setup(void);
 void TIM7_Setup(void);
 # 13 "src/main.c" 2
@@ -2113,17 +2113,27 @@ int main(void)
 
 
 
-
+ __disable_irq();
 
  TIM6_Setup();
  TIM7_Setup();
- ADC3_Setup();
  UART3_Configure();
+ configureSysTick();
 
 
+ __NVIC_SetPriority(TIM6_DAC_IRQn, 3);
+ __NVIC_SetPriority(TIM7_IRQn, 4);
+ __NVIC_SetPriority(USART3_IRQn, 2);
+ __NVIC_SetPriority(SysTick_IRQn, 1);
+
+ __enable_irq();
+
+ (((USART_TypeDef *) (0x40000000U + 0x4800U))->CR1 |= ((0x1U << (13U)) | (0x1U << (3U)) | (0x1U << (2U))));;
+ (((TIM_TypeDef *) (0x40000000U + 0x1000U))->CR1 |= (0x1U << (0U)));
+
+ ADC3_Setup();
  configureRCC_SW();
  configureGPIO_SW();
- configureSysTick();
  Configure_Heater_Cooling_GPIO();
 
  FAN_SET(1U);
@@ -2146,7 +2156,7 @@ int main(void)
     try_count --;
    }
   }
-# 83 "src/main.c"
+# 93 "src/main.c"
   if ((COMM_FLAG & (1 << (0U))) == 1)
   {
    COMM_FLAG &= ~((1 << (0U)));
@@ -2160,7 +2170,7 @@ int main(void)
 
 
   Read_Potentiometer(&(sensors.temperature.ADC_Value),&(sensors.temperature.Value));
-# 110 "src/main.c"
+# 120 "src/main.c"
   if ((COMM_FLAG & (1 << (1U))) != 0 && (CONTROL_MODE_FLAG & (1 << (1U))) == 0)
   {
    if (sensors.temperature.Value > 15 && sensors.temperature.Value < 30)
@@ -2170,7 +2180,7 @@ int main(void)
     {
 
      TIM7_RUNNING_FLAG = (1 << (2U));
-     ((TIM_TypeDef *) (0x40000000U + 0x1400U))->CR1 |= (0x1U << (0U));
+     (((TIM_TypeDef *) (0x40000000U + 0x1400U))->CR1 |= (0x1U << (0U)));
      CONTROL_MODE_FLAG = (1 << (1U));
     }
    }
@@ -2191,11 +2201,11 @@ int main(void)
     if (outputs.Fan == 0)
     {
      TIM7_RUNNING_FLAG = (1 << (1U));
-     ((TIM_TypeDef *) (0x40000000U + 0x1400U))->CR1 |= (0x1U << (0U));
+     (((TIM_TypeDef *) (0x40000000U + 0x1400U))->CR1 |= (0x1U << (0U)));
     }
     else if (TIM7_RUNNING_FLAG & (1 << (1U)))
     {
-     ((TIM_TypeDef *) (0x40000000U + 0x1400U))->CR1 &= ~((0x1U << (0U)));
+     (((TIM_TypeDef *) (0x40000000U + 0x1400U))->CR1 &= ~((0x1U << (0U))));
      TIM7_RUNNING_FLAG &= ~((1 << (1U)));
     }
    }
@@ -2216,11 +2226,13 @@ void USART3_IRQHandler(void)
 {
  if (((USART_TypeDef *) (0x40000000U + 0x4800U))->SR & (0x1U << (5U)))
  {
+
   uart_rx.buffer[(uart_rx.emptyPos++) % (20U)] = (uint8_t)(((USART_TypeDef *) (0x40000000U + 0x4800U))->DR & 0xFFU);
   uart_rx.state = 1;
  }
  if (((USART_TypeDef *) (0x40000000U + 0x4800U))->SR & (0x1U << (4U)))
  {
+
 
 
   (void)((USART_TypeDef *) (0x40000000U + 0x4800U))->SR;
@@ -2236,7 +2248,7 @@ void USART3_IRQHandler(void)
   }
  }
 }
-# 193 "src/main.c"
+# 205 "src/main.c"
 void TIM7_IRQHandler(void)
 {
  if ((((TIM_TypeDef *) (0x40000000U + 0x1400U))->SR & (0x1U << (0U))) != 0)
@@ -2253,7 +2265,7 @@ void TIM7_IRQHandler(void)
   }
  }
 }
-# 217 "src/main.c"
+# 229 "src/main.c"
 void TIM6_DAC_IRQHandler(void)
 {
  if ((((TIM_TypeDef *) (0x40000000U + 0x1000U))->SR & (0x1U << (0U))) != 0)
@@ -2289,9 +2301,9 @@ void TIM6_Setup(void)
  ((TIM_TypeDef *) (0x40000000U + 0x1000U))->ARR &= ~((0xFFFFFFFFU << (0U)));
  ((TIM_TypeDef *) (0x40000000U + 0x1000U))->ARR |= (uint16_t)(((84000000U /((8399U) + 1))/(0.25f)));
 
+ ((TIM_TypeDef *) (0x40000000U + 0x1000U))->DIER |= (0b1 << (0U));
 
 
- ((TIM_TypeDef *) (0x40000000U + 0x1000U))->CR1 |= (1 << (0U));
 }
 
 
@@ -2319,6 +2331,8 @@ void TIM7_Setup(void)
  ((TIM_TypeDef *) (0x40000000U + 0x1400U))->ARR |= (uint16_t) ((84000000U / ((83999U) + 1))/(0.1f));
 
 
-
+ ((TIM_TypeDef *) (0x40000000U + 0x1400U))->DIER |= (0b1 << (0U));
  ((TIM_TypeDef *) (0x40000000U + 0x1400U))->CR1 |= ((0x1U << (3U)));
+
+
 }

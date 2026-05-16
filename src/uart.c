@@ -117,14 +117,11 @@ void UART_Transmit(volatile UART_TX *uart_tx)
 void UART3_Configure(void)
 {
 	RCC->APB1ENR |= RCC_APB1ENR_USART3EN; // Enable USART3 clock
-	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;	// Enable GPIOB clock
 	
 	RCC->APB1RSTR |= RCC_APB1RSTR_USART3RST;
-	RCC->AHB1RSTR |= RCC_AHB1RSTR_GPIOBRST;
 	__asm("nop"); __asm("nop");	// Two cycle delay
 	
 	RCC->APB1RSTR &= ~(RCC_APB1RSTR_USART3RST);
-	RCC->AHB1RSTR &= ~(RCC_AHB1RSTR_GPIOBRST);
 	__asm("nop"); __asm("nop");
 	
 	// Assume that GPIOB is enabled

@@ -56,64 +56,6 @@ void LIGHT_SET(uint8_t state)
 }
 
 
-// ============================================================
-// RCC � enable clocks for GPIOA and GPIOB
-// ============================================================
-void configureRCC_SW(void)
-{
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN;
-    RCC->AHB1RSTR |= RCC_AHB1RSTR_GPIOARST | RCC_AHB1RSTR_GPIOBRST;
-    __asm("NOP"); __asm("NOP");
-    RCC->AHB1RSTR &= ~(RCC_AHB1RSTR_GPIOARST | RCC_AHB1RSTR_GPIOBRST);
-    __asm("NOP"); __asm("NOP");
-}
-
-
-// ============================================================
-// GPIO � configure only the pins needed for 3b
-// PA8  input  (SW2 lux sensor)
-// PA9  output (LED2 light)
-// PA10 input  (SW4 light switch)
-// PB0  input  (SW5 fan switch)
-// PB1  output (LED5 fan)
-// ============================================================
-void configureGPIO_SW(void)
-{
-    // GPIOA
-    GPIOA->MODER &= ~(GPIO_MODER_MODER10_Msk |
-                      GPIO_MODER_MODER9_Msk  |
-                      GPIO_MODER_MODER8_Msk);
-    GPIOA->MODER |=  (0x01U << GPIO_MODER_MODE9_Pos);  // PA9 output
-
-    GPIOA->OTYPER &= ~(GPIO_OTYPER_OT10 | GPIO_OTYPER_OT8);
-    GPIOA->OTYPER |=  (0x01U << GPIO_OTYPER_OT9_Pos);
-
-    GPIOA->OSPEEDR |= (0x03U << GPIO_OSPEEDR_OSPEED10_Pos) |
-                      (0x03U << GPIO_OSPEEDR_OSPEED9_Pos)  |
-                      (0x03U << GPIO_OSPEEDR_OSPEED8_Pos);
-
-    GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD10_Msk |
-                      GPIO_PUPDR_PUPD9_Msk  |
-                      GPIO_PUPDR_PUPD8_Msk);
-    GPIOA->PUPDR |=  (0x01U << GPIO_PUPDR_PUPD10_Pos) |  // PA10 pull-up
-                     (0x01U << GPIO_PUPDR_PUPD8_Pos);     // PA8  pull-up
-
-    // GPIOB
-    GPIOB->MODER &= ~(GPIO_MODER_MODER1_Msk |
-                      GPIO_MODER_MODER0_Msk);
-    GPIOB->MODER |=  (0x01U << GPIO_MODER_MODE1_Pos);    // PB1 output
-
-    GPIOB->OTYPER &= ~(GPIO_OTYPER_OT0);
-    GPIOB->OTYPER |=  (0x01U << GPIO_OTYPER_OT1_Pos);
-
-    GPIOB->OSPEEDR |= (0x03U << GPIO_OSPEEDR_OSPEED1_Pos) |
-                      (0x03U << GPIO_OSPEEDR_OSPEED0_Pos);
-
-    GPIOB->PUPDR &= ~(GPIO_PUPDR_PUPD1_Msk |
-                      GPIO_PUPDR_PUPD0_Msk);
-    GPIOB->PUPDR |=  (0x01U << GPIO_PUPDR_PUPD0_Pos);    // PB0 pull-up
-}
-
 
 // ============================================================
 // SYSTICK SETUP

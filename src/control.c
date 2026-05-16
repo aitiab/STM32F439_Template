@@ -76,43 +76,10 @@ void AUTO_CONTROL(volatile Sensors *sensors, volatile Outputs *outputs)
 //=====================================FUNCTION AUTO CONTROL END=====================================//
 
 
-
-void Configure_Heater_Cooling_GPIO(void)
-{
-	// Heater Output is on PF8
-	// Cooling Output is on PB8
-	// Enable RCC Clocks for GPIOF and GPIOB
-	RCC->AHB1ENR |= (RCC_AHB1ENR_GPIOFEN_Msk | RCC_AHB1ENR_GPIOBEN_Msk);
-
-	// Reset the GPIO ports
-	RCC->AHB1RSTR |= (RCC_AHB1RSTR_GPIOFRST_Msk | RCC_AHB1RSTR_GPIOBRST_Msk);
-	__asm("NOP"); __asm("NOP");
-
-	// Clear reset
-	RCC->AHB1RSTR &= ~(RCC_AHB1RSTR_GPIOFRST_Msk | RCC_AHB1RSTR_GPIOBRST_Msk);
-	__asm("NOP"); __asm("NOP");
-
-	// Configure GPIOF8 and GPIOB8
-	GPIOF->MODER &= ~(GPIO_MODER_MODER8_Msk);
-	GPIOF->MODER |= (0b01 << GPIO_MODER_MODER8_Pos); 		// 0b01 = Output
-	GPIOF->OTYPER &= ~(GPIO_OTYPER_OT8);					// 0b0 = Push-pull. (GND to VDD)
-	GPIOF->OSPEEDR &= ~(GPIO_OSPEEDR_OSPEED8_Msk);			// 0b00 = Low speed which is fine for LEDs
-	GPIOF->PUPDR &= ~(GPIO_PUPDR_PUPD8_Msk); 				// Not needed.
-	
-	GPIOB->MODER &= ~(GPIO_MODER_MODER8_Msk);
-	GPIOB->MODER |= (0b01 << GPIO_MODER_MODER8_Pos); 		// 0b01 = Output
-	GPIOB->OTYPER &= ~(GPIO_OTYPER_OT8);					// 0b0 = Push-pull. (GND to VDD)
-	GPIOB->OSPEEDR &= ~(GPIO_OSPEEDR_OSPEED8_Msk);			// 0b00 = Low speed which is fine for LEDs
-	GPIOB->PUPDR &= ~(GPIO_PUPDR_PUPD8_Msk); 				// Not needed.
-
-	GPIOF->ODR |= (!(HEATER_INITAL_STATE) << GPIO_ODR_OD8_Pos);		    // Outputs are active low. If state = 0 then set ODR to 1 to turn off.
-	GPIOB->ODR |= (!(COOLING_INITAL_STATE) << GPIO_ODR_OD8_Pos);		// Outputs are active low. If state = 0 then set ODR to 1 to turn off.
-}
-
 void Hardware_Temperature_Control(volatile Outputs *outputs)
 {
 	FAN_SET(outputs->Fan);							// Keep one source of truth for the hardware state of the fan. The func updates the internal state in switches.c
-
+	LIGHT_SET(outputs->Light);						// Keep one source of truth for the hardware state of the light. The func updates the internal state in switches.c
 	if (outputs->Cooling == 1)
 	{
 		// Turn on cooling
@@ -135,3 +102,88 @@ void Hardware_Temperature_Control(volatile Outputs *outputs)
 		GPIOF->ODR |= GPIO_ODR_OD8_Msk;				// Active low output. Set to 1 to turn off.
 	}
 }
+
+//==============================================================================================================//
+/*
+	
+	Light Switch -> PA10 -> Digital Input
+	Light Control Output -> PA9 -> Digital Output
+	Light Intensity Sensor -> PA8 -> Digital Input
+
+	USART3 RX -> PB11 -> I/O Alternate Function
+	USART3 TX -> PB10 -> I/O Alternate Function
+	Cooling Output -> PB8 -> Digital Output
+	Fan Control Output -> PB1 -> Digital Output
+	Fan Switch -> PB0 -> Digital Input
+
+	Heater Output -> PF8 -> Digital Output
+	Temperature Sensor -> PF10 -> Analogue Input
+
+	GPIO A, B, F are used.
+*/
+void configureRCC(void)
+{
+	RCC->AHB1ENR |= (RCC_AHB1ENR_GPIOAEN_Msk | RCC_AHB1ENR_GPIOBEN_Msk | RCC_AHB1ENR_GPIOFEN_Msk);
+
+	// Reset the GPIO ports
+	RCC->AHB1RSTR |= (RCC_AHB1RSTR_GPIOARST_Msk | RCC_AHB1RSTR_GPIOBRST_Msk | RCC_AHB1RSTR_GPIOFRST_Msk);
+	__asm("NOP"); __asm("NOP");
+
+	// Clear reset
+	RCC->AHB1RSTR &= ~(RCC_AHB1RSTR_GPIOARST_Msk | RCC_AHB1RSTR_GPIOBRST_Msk | RCC_AHB1RSTR_GPIOFRST_Msk);
+	__asm("NOP"); __asm("NOP");
+}
+
+
+// ============================================================
+// PA8  input  (SW2 lux sensor)
+// PA9  output (LED2 light)
+// PA10 input  (SW4 light switch)
+// PB0  input  (SW5 fan switch)
+// PB1  output (LED5 fan)
+// ============================================================
+void configureGPIO(void)
+{
+    // GPIOA
+	// Pin 8 and 10 = input. Pin 9 = output.		0b00 = input, 0b01 = output.
+    GPIOA->MODER &= ~(GPIO_MODER_MODER10_Msk | GPIO_MODER_MODER9_Msk | GPIO_MODER_MODER8_Msk);	 // Clear
+    GPIOA->MODER |=  (0x01 << GPIO_MODER_MODE9_Pos);  // PA9 output. 0b01 = output
+
+	// Only PA9 is output. Set to push-pull (GND to VDD) (0b0). For PA8 and PA10 it does not matter as they are inputs
+    GPIOA->OTYPER &= ~(GPIO_OTYPER_OT10_Msk | GPIO_OTYPER_OT9_Msk | GPIO_OTYPER_OT8_Msk );		
+
+	// Only PA9 is output. Set to low speed (0b00). For PA8 and PA10 it does not matter as they are inputs
+    GPIOA->OSPEEDR &= ~(GPIO_OSPEEDR_OSPEED10_Msk | GPIO_OSPEEDR_OSPEED9_Msk | GPIO_OSPEEDR_OSPEED8_Msk);
+
+    GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD10_Msk | GPIO_PUPDR_PUPD9_Msk  | GPIO_PUPDR_PUPD8_Msk);
+    GPIOA->PUPDR |=  (0x01 << GPIO_PUPDR_PUPD10_Pos) |  // PA10 pull-up
+                     (0x01 << GPIO_PUPDR_PUPD8_Pos);     // PA8  pull-up
+
+    // GPIOB
+	// Pin 0 = input. Pin 1, 8 = digital output. Pin 10 and 11 = Alternate Function.
+    GPIOB->MODER &= ~(GPIO_MODER_MODER11_Msk | GPIO_MODER_MODER10_Msk | GPIO_MODER_MODER8_Msk |
+					 GPIO_MODER_MODER1_Msk | GPIO_MODER_MODER0_Msk);
+		 
+    GPIOB->MODER |=  (0x01 << GPIO_MODER_MODE1_Pos) | (0x01 << GPIO_MODER_MODE8_Pos);    // PB1 and PB8 output. 0b01 = output
+
+    GPIOB->OTYPER &= ~(GPIO_OTYPER_OT0_Msk | GPIO_OTYPER_OT1_Msk | GPIO_OTYPER_OT8_Msk);		// 0b0 = push-pull ((GND to VDD)) for outputs. Doesnt matter for inputs
+
+    GPIOB->OSPEEDR &= ~(GPIO_OSPEEDR_OSPEED0_Msk | GPIO_OSPEEDR_OSPEED1_Msk | GPIO_OSPEEDR_OSPEED8_Msk);	// 0b00 = low speed for outputs. Doesnt matter for inputs
+	
+    GPIOB->PUPDR &= ~(GPIO_PUPDR_PUPD8_Msk | GPIO_PUPDR_PUPD1_Msk | GPIO_PUPDR_PUPD0_Msk);
+    GPIOB->PUPDR |=  (0x01 << GPIO_PUPDR_PUPD0_Pos);    // PB0 pull-up
+
+	// GPIOF
+	// Pin 8 = output.
+	GPIOF->MODER &= ~(GPIO_MODER_MODER8_Msk);
+	GPIOF->MODER |=  (0x01 << GPIO_MODER_MODE8_Pos);    // PF8 output. 0b01 = output
+	GPIOF->OTYPER &= ~(GPIO_OTYPER_OT8_Msk);			// 0b0 = push-pull ((GND to VDD)) for outputs. 
+	GPIOF->OSPEEDR &= ~(GPIO_OSPEEDR_OSPEED8_Msk);	// 0b00 = low speed for outputs. 
+	GPIOF->PUPDR &= ~(GPIO_PUPDR_PUPD8_Msk);			// 0b00 = no pull-up or pull-down for outputs.
+
+
+	GPIOF->ODR |= (!(HEATER_INITAL_STATE) << GPIO_ODR_OD8_Pos);		    // Outputs are active low. If state = 0 then set ODR to 1 to turn off.
+	GPIOB->ODR |= (!(COOLING_INITAL_STATE) << GPIO_ODR_OD8_Pos);		// Outputs are active low. If state = 0 then set ODR to 1 to turn off.
+}
+
+//==============================================================================================================//

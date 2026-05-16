@@ -37,18 +37,16 @@ float Convert_ADC_to_Temperature(float ADC_Value)
 void ADC3_Setup(void)
 {
 	RCC->APB2ENR |= RCC_APB2ENR_ADC3EN;
-	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOFEN;
 	
 	RCC->APB2RSTR |= RCC_APB2RSTR_ADCRST;
-	RCC->AHB1RSTR |= RCC_AHB1RSTR_GPIOFRST;
 	
 	__asm("nop");		__asm("nop");
 	
 	RCC->APB2RSTR &= ~(RCC_APB2RSTR_ADCRST);
-	RCC->AHB1RSTR &= ~(RCC_AHB1RSTR_GPIOFRST);
 	
 	__asm("nop");		__asm("nop");
 	
+	// Expects GPIOs to be enabled and reset already.
 	GPIOF->MODER &= ~(GPIO_MODER_MODE10_Msk);
 	GPIOF->MODER |= (0b11 << GPIO_MODER_MODE10_Pos);			// 0b11 sets GPIO Pin to analog mode
 	GPIOF->PUPDR &= ~(GPIO_PUPDR_PUPD10_Msk);							// 0b00 sets PUPDR to no pull up or down

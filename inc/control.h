@@ -58,8 +58,11 @@ typedef struct {
 void Prepare_Msg_To_PC(volatile Outputs *outputs, volatile Sensors *sensors, volatile UART_TX *uart_tx);
 uint8_t Process_PC_CMD(volatile UART_RX *uart_rx, volatile Outputs *outputs);
 void AUTO_CONTROL(volatile Sensors *sensors, volatile Outputs *outputs);
-void Configure_Heater_Cooling_GPIO(void);
+// void Configure_Heater_Cooling_GPIO(void);
 void Hardware_Temperature_Control(volatile Outputs *outputs);
+
+void configureGPIO(void);
+void configureRCC(void);
 
 
 #endif

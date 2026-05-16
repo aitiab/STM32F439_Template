@@ -135,7 +135,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGDARM</Key>
-          <Name>(1010=-1,-1,-1,-1,0)(1007=-1,-1,-1,-1,0)(1008=90,121,466,357,0)(1009=-1,-1,-1,-1,0)(1012=-1,-1,-1,-1,0)</Name>
+          <Name>(1010=1001,163,1451,720,0)(1007=-1,-1,-1,-1,0)(1008=90,121,466,357,0)(1009=-1,-1,-1,-1,0)(1012=-1,-1,-1,-1,0)</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -164,6 +164,11 @@
           <count>1</count>
           <WinNumber>1</WinNumber>
           <ItemText>\\STM32F4_RAM\src/main.c\sensors.temperature.ADC_Value</ItemText>
+        </Ww>
+        <Ww>
+          <count>2</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>\\STM32F4_RAM\src/switches.c\s_fanEnabled</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>

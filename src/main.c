@@ -41,6 +41,10 @@ int main(void)
 	
 	__disable_irq();						// Disable global interrupts until everything is set up
 	
+	configureRCC();
+	configureGPIO();
+	
+	ADC3_Setup();
 	TIM6_Setup();
 	TIM7_Setup();
 	UART3_Configure();
@@ -52,15 +56,15 @@ int main(void)
 	NVIC_SetPriority(USART3_IRQn, 2);			// Set priority of UART interrupt to 2 (higher than TIM6 and TIM7). Not sure why but sense it maybe more important.
 	NVIC_SetPriority(SysTick_IRQn, 1);			// Set priority of SysTick interrupt to 1 (highest priority). Needed otherwise will miss the timing.
 
+	NVIC_EnableIRQ(TIM6_DAC_IRQn);				// Enable TIM6 interrupt in NVIC
+	NVIC_EnableIRQ(TIM7_IRQn);					// Enable TIM7 interrupt in NVIC
+	NVIC_EnableIRQ(USART3_IRQn);				// Enable USART3 interrupt in NVIC
+	NVIC_EnableIRQ(SysTick_IRQn);				// Enable SysTick interrupt in NVIC
+
 	__enable_irq();						// Enable global interrupts after setting up everything
 
 	UART_ENABLE;		// Enable UART after setting up interrupts.
 	TIM6_ENABLE;		// Enable TIM6 after setting up interrupts. Will tick every 4 seconds.
-	
-	ADC3_Setup();
-	configureRCC_SW();
-	configureGPIO_SW();
-	Configure_Heater_Cooling_GPIO();
 	
 	FAN_SET(FAN_INITIAL_STATE);
 	LIGHT_SET(LIGHT_INITAL_STATE);

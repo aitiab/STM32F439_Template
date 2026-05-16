@@ -48,8 +48,6 @@ uint8_t HMS_Poll_Fan_Switch(volatile uint8_t *o_fan_status, uint8_t hardware_upd
 void HMS_UART_Set_Light(volatile uint8_t *o_light_status, uint8_t uartLightCommand);
 void HMS_Poll_Light_Switch(volatile uint8_t *o_light_status);
 void configureSysTick(void);
-void configureGPIO_SW(void);
-void configureRCC_SW(void);
 
 
 #endif
