@@ -11,7 +11,7 @@
 #define UART_QUEUE_SIZE (3 * 12U)
 
 // Enables the USART, Transmitter and reciever.
-#define UART_ENABLE (USART3->CR1 |= (USART_CR1_UE_Msk | USART_CR1_TE_Msk | USART_CR1_RE));
+#define UART_ENABLE (USART3->CR1 |= (USART_CR1_UE_Msk | USART_CR1_TE_Msk | USART_CR1_RE))
 
 
 typedef struct {

@@ -1,5 +1,5 @@
 /********************************************
-*       Spec 3b � Switch Debounce & Toggle  *
+*       Spec 3b Switch Debounce & Toggle  *
 *       Authors: Ken Navarro     *
 ********************************************/
 
@@ -69,7 +69,7 @@ void SysTick_Handler(void)
     g_msTick++;
 }
 // ============================================================
-// POLLSWITCH � debounce and lockout logic
+// POLLSWITCH debounce and lockout logi
 // Returns 1 on valid press, 0 otherwise
 // ============================================================
 static uint8_t PollSwitch(SwitchCtx_t *sw, uint8_t currentlyPressed)
@@ -112,7 +112,7 @@ static uint8_t PollSwitch(SwitchCtx_t *sw, uint8_t currentlyPressed)
 
 
 // ============================================================
-// HMS_POLL_FAN_SWITCH � pure toggle logic only for fan
+// HMS_POLL_FAN_SWITCH pure toggle logic oly for fan
 // ============================================================
 // Also updates the fan and light status flags provided. This is because the internal flags are private.
 
@@ -141,7 +141,7 @@ uint8_t HMS_Poll_Fan_Switch(volatile uint8_t *o_fan_status, uint8_t hardware_upd
 
 
 // ============================================================
-// HMS_POLL_LIGHT_SWITCH � pure toggle logic only for light
+// HMS_POLL_LIGHT_SWITC pure toggle logic only for light
 // ============================================================
 // Also updates the fan and light status flags provided. This is because the internal flags are private.
 
