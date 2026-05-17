@@ -2020,17 +2020,15 @@ float Convert_ADC_to_Temperature(float ADC_Value)
 void ADC3_Setup(void)
 {
  ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->APB2ENR |= (0x1U << (10U));
- ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->AHB1ENR |= (0x1U << (5U));
 
  ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->APB2RSTR |= (0x1U << (8U));
- ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->AHB1RSTR |= (0x1U << (5U));
 
  __asm("nop"); __asm("nop");
 
  ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->APB2RSTR &= ~((0x1U << (8U)));
- ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->AHB1RSTR &= ~((0x1U << (5U)));
 
  __asm("nop"); __asm("nop");
+
 
  ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->MODER &= ~((0x3U << (20U)));
  ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->MODER |= (0b11 << (20U));

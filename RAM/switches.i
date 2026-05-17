@@ -1997,8 +1997,6 @@ uint8_t HMS_Poll_Fan_Switch(volatile uint8_t *o_fan_status, uint8_t hardware_upd
 void HMS_UART_Set_Light(volatile uint8_t *o_light_status, uint8_t uartLightCommand);
 void HMS_Poll_Light_Switch(volatile uint8_t *o_light_status);
 void configureSysTick(void);
-void configureGPIO_SW(void);
-void configureRCC_SW(void);
 # 7 "src/switches.c" 2
 # 22 "src/switches.c"
 volatile uint32_t g_msTick = 0U;
@@ -2037,55 +2035,6 @@ void LIGHT_SET(uint8_t state)
     s_lightEnabled = state;
 }
 
-
-
-
-
-void configureRCC_SW(void)
-{
-    ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->AHB1ENR |= (0x1U << (0U)) | (0x1U << (1U));
-    ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->AHB1RSTR |= (0x1U << (0U)) | (0x1U << (1U));
-    __asm("NOP"); __asm("NOP");
-    ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->AHB1RSTR &= ~((0x1U << (0U)) | (0x1U << (1U)));
-    __asm("NOP"); __asm("NOP");
-}
-# 80 "src/switches.c"
-void configureGPIO_SW(void)
-{
-
-    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->MODER &= ~((0x3U << (20U)) |
-                      (0x3U << (18U)) |
-                      (0x3U << (16U)));
-    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->MODER |= (0x01U << (18U));
-
-    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->OTYPER &= ~((0x1U << (10U)) | (0x1U << (8U)));
-    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->OTYPER |= (0x01U << (9U));
-
-    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->OSPEEDR |= (0x03U << (20U)) |
-                      (0x03U << (18U)) |
-                      (0x03U << (16U));
-
-    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->PUPDR &= ~((0x3U << (20U)) |
-                      (0x3U << (18U)) |
-                      (0x3U << (16U)));
-    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->PUPDR |= (0x01U << (20U)) |
-                     (0x01U << (16U));
-
-
-    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->MODER &= ~((0x3U << (2U)) |
-                      (0x3U << (0U)));
-    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->MODER |= (0x01U << (2U));
-
-    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->OTYPER &= ~((0x1U << (0U)));
-    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->OTYPER |= (0x01U << (1U));
-
-    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->OSPEEDR |= (0x03U << (2U)) |
-                      (0x03U << (0U));
-
-    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->PUPDR &= ~((0x3U << (2U)) |
-                      (0x3U << (0U)));
-    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->PUPDR |= (0x01U << (0U));
-}
 
 
 

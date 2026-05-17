@@ -1979,14 +1979,14 @@ void delay_software_us(uint32_t);
 # 7 "./inc\\uart.h" 2
 # 17 "./inc\\uart.h"
 typedef struct {
- uint8_t queue [(20U)];
+ uint8_t queue [(3 * 12U)];
  uint8_t curPos;
  uint8_t emptyPos;
  uint8_t t_success;
 } UART_TX;
 
 typedef struct {
- uint8_t buffer [(20U)];
+ uint8_t buffer [(5 * 4U)];
  uint8_t curPos;
  uint8_t emptyPos;
  uint8_t state;
@@ -1995,29 +1995,29 @@ typedef struct {
 void UART3_Configure(void);
 void UART_Prep(volatile UART_TX *uart_tx, volatile char *packet, uint8_t size);
 void UART_Transmit(volatile UART_TX *uart_tx);
-uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, uint8_t commands[], uint8_t *idx, uint8_t size);
+uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, volatile uint8_t commands[], volatile uint8_t *idx, uint8_t size);
 # 3 "src/uart.c" 2
-uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, uint8_t commands[], uint8_t *idx, uint8_t size)
+uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, volatile uint8_t commands[], volatile uint8_t *idx, uint8_t size)
 {
   if ((uart_rx->emptyPos - uart_rx->curPos) < 2)
   {
    return 0;
   }
 
-  uint8_t header;
+  volatile uint8_t header;
 
   volatile uint8_t found = 0;
-  volatile uint8_t idx_incre = (20U);
+  volatile uint8_t idx_incre = (5 * 4U);
 
 
-  while (*idx < size && (idx_incre > 0))
+  while (*idx < size && (idx_incre > 0) && uart_rx->curPos < uart_rx->emptyPos)
   {
    idx_incre--;
-   header = uart_rx->buffer[((uart_rx->curPos)++) % (20U)];
+   header = uart_rx->buffer[((uart_rx->curPos)++) % (5 * 4U)];
    if (header == 0x26)
    {
     found = 1;
-    commands[(*idx)++] = uart_rx->buffer[((uart_rx->curPos)++) % (20U)];
+    commands[(*idx)++] = uart_rx->buffer[((uart_rx->curPos)++) % (5 * 4U)];
     idx_incre--;
    }
   }
@@ -2033,7 +2033,7 @@ uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, uint8_t commands[], uint
     return 0;
   }
 
-    return 1U;
+    return 1;
 }
 # 49 "src/uart.c"
 void UART_Prep(volatile UART_TX *uart_tx, volatile char *packet, uint8_t size)
@@ -2061,7 +2061,8 @@ void UART_Transmit(volatile UART_TX *uart_tx)
 
  while (uart_tx->curPos < uart_tx->emptyPos && time_out > 0)
  {
-  while((((USART_TypeDef *) (0x40000000U + 0x4800U))->SR & (0x1U << (7U))) == 0x00 && time_out > 0) { time_out--; }
+  while((((USART_TypeDef *) (0x40000000U + 0x4800U))->SR & (0x1U << (7U))) == 0x00 && time_out > 0)
+  { time_out--; }
 
   if (time_out > 0)
   {
@@ -2078,7 +2079,8 @@ void UART_Transmit(volatile UART_TX *uart_tx)
 
   time_out = 39375;
 
-  while ((((USART_TypeDef *) (0x40000000U + 0x4800U))->SR & (0x1U << (6U))) == 0x00 && time_out > 0) { time_out--; }
+  while ((((USART_TypeDef *) (0x40000000U + 0x4800U))->SR & (0x1U << (6U))) == 0x00 && time_out > 0)
+  { time_out--; }
  }
 
 
@@ -2097,14 +2099,11 @@ void UART_Transmit(volatile UART_TX *uart_tx)
 void UART3_Configure(void)
 {
  ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->APB1ENR |= (0x1U << (18U));
- ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->AHB1ENR |= (0x1U << (1U));
 
  ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->APB1RSTR |= (0x1U << (18U));
- ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->AHB1RSTR |= (0x1U << (1U));
  __asm("nop"); __asm("nop");
 
  ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->APB1RSTR &= ~((0x1U << (18U)));
- ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->AHB1RSTR &= ~((0x1U << (1U)));
  __asm("nop"); __asm("nop");
 
 

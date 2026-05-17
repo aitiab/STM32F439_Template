@@ -1,7 +1,10 @@
 #include "control.h"
 
 
-#define COMMANDS_FOUND_SIZE 	(11U)
+#define COMMANDS_ARRAY_SIZE 	(11U)
+
+#define PACKET_SIZE 			(10U)
+#define TOTAL_PACKET_SIZE 		(12U)   // 10 for packet, 2 for CR LF
 
 
 
@@ -12,25 +15,25 @@
 // Output: None
 void Prepare_Msg_To_PC(volatile Outputs *outputs, volatile Sensors *sensors, volatile UART_TX *uart_tx)
 {
-	volatile char packet[10] = {0};
+	volatile char packet[TOTAL_PACKET_SIZE] = {0};
 	ASCII_Extract(&(sensors->temperature.Value), sensors->temperature.ASCII);
 	create_HMS_to_PC_Packet(outputs->Light, outputs->Heater, outputs->Fan, outputs->Cooling, sensors->temperature.ASCII, packet);
 	
-	UART_Prep(uart_tx, packet, 10);
+	UART_Prep(uart_tx, packet, TOTAL_PACKET_SIZE);
 }
 //=====================================FUNCTION UPDATE TO PC END================================================================//
 
 
 uint8_t Process_PC_CMD(volatile UART_RX *uart_rx, volatile Outputs *outputs)
 {
-	uint8_t commands[COMMANDS_FOUND_SIZE];
-	uint8_t idx = 0;
-	if (UART_Read_PC_Command(uart_rx, commands, &idx, COMMANDS_FOUND_SIZE) == 0) { return 0; }		// Get all possible commands bytes in rx queue
+	volatile uint8_t commands[COMMANDS_ARRAY_SIZE] = {0};	// Array to store the command bytes in the rx buffer.
+	volatile uint8_t idx = 0;			// Index of commands buffer.
+	if (UART_Read_PC_Command(uart_rx, commands, &idx, COMMANDS_ARRAY_SIZE) == 0) { return 0; }		// Get all possible commands bytes in rx queue
 
 	
-	uint8_t buffer[5];
-	uint8_t c_idx = 0;
-	uint8_t valid_found = 0;
+	volatile uint8_t buffer[5];
+	volatile uint8_t c_idx = 0;                 // index of search index in buffer. it should not be >= idx.
+	volatile uint8_t valid_found = 0;
 	while ( (valid_found = validate_CTRL_Packet(commands[c_idx++], buffer)) == 0 && c_idx < idx);
 	
 	if (valid_found == 0) { return 0; }

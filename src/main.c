@@ -85,6 +85,7 @@ int main(void)
 				UART_Transmit(&uart_tx);
 				try_count --;
 			}
+			uart_tx.t_success = 0;		// Reset transmission success for next transmission
 		}
 		
 		
@@ -181,7 +182,7 @@ void USART3_IRQHandler(void)
 	if (USART3->SR & USART_SR_RXNE_Msk)						// Recieved data is ready to be read.
 	{
 		// Read the byte into the buffer. The buffer is circular. The read of DR will clear the RXNE flag.
-		uart_rx.buffer[(uart_rx.emptyPos++) % UART_BUFFER_SIZE] = (uint8_t)(USART3->DR & 0xFFU);		
+		uart_rx.buffer[(uart_rx.emptyPos++) % UART_BUFFER_SIZE] = (uint8_t)(USART3->DR & 0xFF);		
 		uart_rx.state = 1;
 	}
 	if (USART3->SR & USART_SR_IDLE_Msk)

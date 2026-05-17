@@ -1,19 +1,19 @@
 
 #include "uart.h"
-uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, uint8_t commands[], uint8_t *idx, uint8_t size)
+uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, volatile uint8_t commands[], volatile uint8_t *idx, uint8_t size)
 {	
 		if ((uart_rx->emptyPos - uart_rx->curPos) < 2)												// Check in case the next two elements do exist
 		{
 			return 0;
 		}
 		
-		uint8_t header;
+		volatile uint8_t header = 0;
 		
 		volatile uint8_t found = 0;
 		volatile uint8_t idx_incre = UART_BUFFER_SIZE;								// The buffer is circular. Therefore to search from curPos back to curPos (in circle) is the size of buffer	
 			
 		// Search until a header is found. The next element is assumed to be the commandByte
-		while (*idx < size && (idx_incre > 0))																											// idx is the index of the commands buffer. Size is the size of the commands buffer
+		while (*idx < size && (idx_incre > 0) && uart_rx->curPos < uart_rx->emptyPos)																											// idx is the index of the commands buffer. Size is the size of the commands buffer
 		{
 			idx_incre--;																																							// idx_incre is used to track the circular traversal.
 			header = uart_rx->buffer[((uart_rx->curPos)++) % UART_BUFFER_SIZE];												// Get current byte. Possibly the header
@@ -36,7 +36,7 @@ uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, uint8_t commands[], uint
 				return 0;
 		}
 		
-    return 1U;
+    return 1;
 }
 
 
@@ -81,7 +81,8 @@ void UART_Transmit(volatile UART_TX *uart_tx)
 	
 	while (uart_tx->curPos < uart_tx->emptyPos && time_out > 0)		// Keep transferring from queue until an empty element is reached. or timeout had previously expired.
 	{
-		while((USART3->SR & USART_SR_TXE_Msk) == 0x00 && time_out > 0) { time_out--; }
+		while((USART3->SR & USART_SR_TXE_Msk) == 0x00 && time_out > 0) 
+		{ time_out--; }
 		
 		if (time_out > 0)
 		{
@@ -98,7 +99,8 @@ void UART_Transmit(volatile UART_TX *uart_tx)
 		
 		time_out = 39375; 																					// Reset time_out
 		
-		while ((USART3->SR & USART_SR_TC) == 0x00 && time_out > 0) { time_out--; }
+		while ((USART3->SR & USART_SR_TC) == 0x00 && time_out > 0) 
+		{ time_out--; }
 	}
 	
 	

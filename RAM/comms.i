@@ -1982,11 +1982,12 @@ void ASCII_Extract(volatile float *t_Val, volatile char t_ASCII[]);
 void create_HMS_to_PC_Packet(volatile uint8_t o_light, volatile uint8_t o_heater, volatile uint8_t o_fan,
                volatile uint8_t o_cooling, volatile char temperatASCII[], volatile char *packet);
 
-uint8_t validate_CTRL_Packet(uint8_t byte, uint8_t buffer[]);
+
+uint8_t validate_CTRL_Packet(volatile uint8_t byte, volatile uint8_t buffer[]);
 # 2 "src/comms.c" 2
 
 
-uint8_t validate_CTRL_Packet(uint8_t byte, uint8_t buffer[])
+uint8_t validate_CTRL_Packet(volatile uint8_t byte, volatile uint8_t buffer[])
 {
  if ((byte & 0b11000011) != (0b01000000))
  {
@@ -2032,6 +2033,9 @@ void create_HMS_to_PC_Packet(volatile uint8_t o_light, volatile uint8_t o_heater
 
  packet[9] = (0b01000001) | (o_light << (5U)) | (o_heater << (4U));
  packet[9] |= ((o_cooling << (3U)) | (o_fan << (2U)));
+
+ packet[10] = '\r';
+ packet[11] = '\n';
 }
 
 

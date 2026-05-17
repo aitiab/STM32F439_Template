@@ -1985,14 +1985,14 @@ void delay_software_us(uint32_t);
 # 1 "./inc\\uart.h" 1
 # 17 "./inc\\uart.h"
 typedef struct {
- uint8_t queue [(20U)];
+ uint8_t queue [(3 * 12U)];
  uint8_t curPos;
  uint8_t emptyPos;
  uint8_t t_success;
 } UART_TX;
 
 typedef struct {
- uint8_t buffer [(20U)];
+ uint8_t buffer [(5 * 4U)];
  uint8_t curPos;
  uint8_t emptyPos;
  uint8_t state;
@@ -2001,7 +2001,7 @@ typedef struct {
 void UART3_Configure(void);
 void UART_Prep(volatile UART_TX *uart_tx, volatile char *packet, uint8_t size);
 void UART_Transmit(volatile UART_TX *uart_tx);
-uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, uint8_t commands[], uint8_t *idx, uint8_t size);
+uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, volatile uint8_t commands[], volatile uint8_t *idx, uint8_t size);
 # 9 "./inc\\control.h" 2
 # 1 "./inc\\comms.h" 1
 # 40 "./inc\\comms.h"
@@ -2010,7 +2010,8 @@ void ASCII_Extract(volatile float *t_Val, volatile char t_ASCII[]);
 void create_HMS_to_PC_Packet(volatile uint8_t o_light, volatile uint8_t o_heater, volatile uint8_t o_fan,
                volatile uint8_t o_cooling, volatile char temperatASCII[], volatile char *packet);
 
-uint8_t validate_CTRL_Packet(uint8_t byte, uint8_t buffer[]);
+
+uint8_t validate_CTRL_Packet(volatile uint8_t byte, volatile uint8_t buffer[]);
 # 10 "./inc\\control.h" 2
 # 1 "./inc\\adc.h" 1
 
@@ -2042,8 +2043,6 @@ uint8_t HMS_Poll_Fan_Switch(volatile uint8_t *o_fan_status, uint8_t hardware_upd
 void HMS_UART_Set_Light(volatile uint8_t *o_light_status, uint8_t uartLightCommand);
 void HMS_Poll_Light_Switch(volatile uint8_t *o_light_status);
 void configureSysTick(void);
-void configureGPIO_SW(void);
-void configureRCC_SW(void);
 # 12 "./inc\\control.h" 2
 # 30 "./inc\\control.h"
 typedef struct {
@@ -2077,8 +2076,11 @@ typedef struct {
 void Prepare_Msg_To_PC(volatile Outputs *outputs, volatile Sensors *sensors, volatile UART_TX *uart_tx);
 uint8_t Process_PC_CMD(volatile UART_RX *uart_rx, volatile Outputs *outputs);
 void AUTO_CONTROL(volatile Sensors *sensors, volatile Outputs *outputs);
-void Configure_Heater_Cooling_GPIO(void);
+
 void Hardware_Temperature_Control(volatile Outputs *outputs);
+
+void configureGPIO(void);
+void configureRCC(void);
 # 19 "./inc\\main.h" 2
 # 62 "./inc\\main.h"
 void TIM6_Setup(void);
@@ -2115,6 +2117,10 @@ int main(void)
 
  __disable_irq();
 
+ configureRCC();
+ configureGPIO();
+
+ ADC3_Setup();
  TIM6_Setup();
  TIM7_Setup();
  UART3_Configure();
@@ -2126,15 +2132,15 @@ int main(void)
  __NVIC_SetPriority(USART3_IRQn, 2);
  __NVIC_SetPriority(SysTick_IRQn, 1);
 
+ __NVIC_EnableIRQ(TIM6_DAC_IRQn);
+ __NVIC_EnableIRQ(TIM7_IRQn);
+ __NVIC_EnableIRQ(USART3_IRQn);
+ __NVIC_EnableIRQ(SysTick_IRQn);
+
  __enable_irq();
 
  (((USART_TypeDef *) (0x40000000U + 0x4800U))->CR1 |= ((0x1U << (13U)) | (0x1U << (3U)) | (0x1U << (2U))));;
  (((TIM_TypeDef *) (0x40000000U + 0x1000U))->CR1 |= (0x1U << (0U)));
-
- ADC3_Setup();
- configureRCC_SW();
- configureGPIO_SW();
- Configure_Heater_Cooling_GPIO();
 
  FAN_SET(1U);
  LIGHT_SET(0U);
@@ -2155,8 +2161,9 @@ int main(void)
     UART_Transmit(&uart_tx);
     try_count --;
    }
+   uart_tx.t_success = 0;
   }
-# 93 "src/main.c"
+# 98 "src/main.c"
   if ((COMM_FLAG & (1 << (0U))) == 1)
   {
    COMM_FLAG &= ~((1 << (0U)));
@@ -2170,7 +2177,9 @@ int main(void)
 
 
   Read_Potentiometer(&(sensors.temperature.ADC_Value),&(sensors.temperature.Value));
-# 120 "src/main.c"
+
+  HMS_Poll_Light_Switch(&outputs.Light);
+# 126 "src/main.c"
   if ((COMM_FLAG & (1 << (1U))) != 0 && (CONTROL_MODE_FLAG & (1 << (1U))) == 0)
   {
    if (sensors.temperature.Value > 15 && sensors.temperature.Value < 30)
@@ -2178,7 +2187,9 @@ int main(void)
     COMM_FLAG &= ~((1 << (1U)));
     if (Process_PC_CMD(&uart_rx, &outputs) != 0)
     {
-
+     HMS_UART_Set_Light(&outputs.Light, outputs.Light);
+     (((TIM_TypeDef *) (0x40000000U + 0x1400U))->CR1 &= ~((0x1U << (0U))));
+     ((TIM_TypeDef *) (0x40000000U + 0x1400U))->CNT = 0;
      TIM7_RUNNING_FLAG = (1 << (2U));
      (((TIM_TypeDef *) (0x40000000U + 0x1400U))->CR1 |= (0x1U << (0U)));
      CONTROL_MODE_FLAG = (1 << (1U));
@@ -2206,6 +2217,7 @@ int main(void)
     else if (TIM7_RUNNING_FLAG & (1 << (1U)))
     {
      (((TIM_TypeDef *) (0x40000000U + 0x1400U))->CR1 &= ~((0x1U << (0U))));
+     ((TIM_TypeDef *) (0x40000000U + 0x1400U))->CNT = 0;
      TIM7_RUNNING_FLAG &= ~((1 << (1U)));
     }
    }
@@ -2227,7 +2239,7 @@ void USART3_IRQHandler(void)
  if (((USART_TypeDef *) (0x40000000U + 0x4800U))->SR & (0x1U << (5U)))
  {
 
-  uart_rx.buffer[(uart_rx.emptyPos++) % (20U)] = (uint8_t)(((USART_TypeDef *) (0x40000000U + 0x4800U))->DR & 0xFFU);
+  uart_rx.buffer[(uart_rx.emptyPos++) % (5 * 4U)] = (uint8_t)(((USART_TypeDef *) (0x40000000U + 0x4800U))->DR & 0xFF);
   uart_rx.state = 1;
  }
  if (((USART_TypeDef *) (0x40000000U + 0x4800U))->SR & (0x1U << (4U)))
@@ -2248,7 +2260,7 @@ void USART3_IRQHandler(void)
   }
  }
 }
-# 205 "src/main.c"
+# 214 "src/main.c"
 void TIM7_IRQHandler(void)
 {
  if ((((TIM_TypeDef *) (0x40000000U + 0x1400U))->SR & (0x1U << (0U))) != 0)
@@ -2265,7 +2277,7 @@ void TIM7_IRQHandler(void)
   }
  }
 }
-# 229 "src/main.c"
+# 238 "src/main.c"
 void TIM6_DAC_IRQHandler(void)
 {
  if ((((TIM_TypeDef *) (0x40000000U + 0x1000U))->SR & (0x1U << (0U))) != 0)

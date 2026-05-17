@@ -1,7 +1,7 @@
 #include "comms.h"
 
 
-uint8_t validate_CTRL_Packet(uint8_t byte, uint8_t buffer[])
+uint8_t validate_CTRL_Packet(volatile uint8_t byte, volatile uint8_t buffer[])
 {
 	if ((byte & 0b11000011) != INPUT_PACKET_FORMAT)
 	{
@@ -47,6 +47,9 @@ void create_HMS_to_PC_Packet(volatile uint8_t o_light, volatile uint8_t o_heater
 	// The byte has format: 0b01abcd01 where a, b, c and d are LIGHT, HEATER, COOLING and FAN respectively.
 	packet[9] = OUTPUT_PACKET_STATUS_FORMAT | (o_light << LIGHT_Bit_Pos) | (o_heater << HEATER_Bit_Pos);
 	packet[9] |= ((o_cooling << COOLING_Bit_Pos) | (o_fan << FAN_Bit_Pos));
+
+	packet[10] = '\r';		// Carriage return
+	packet[11] = '\n';		// New line
 }
 //=====================================FUNCTION CONVERT ADC TO TEMPERATURE START================================================================//
 

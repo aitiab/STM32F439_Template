@@ -7,8 +7,8 @@
 #include "stm32f439xx.h"
 
 
-#define UART_BUFFER_SIZE (20U)
-#define UART_QUEUE_SIZE (20U)
+#define UART_BUFFER_SIZE (5 * 4U)
+#define UART_QUEUE_SIZE (3 * 12U)
 
 // Enables the USART, Transmitter and reciever.
 #define UART_ENABLE (USART3->CR1 |= (USART_CR1_UE_Msk | USART_CR1_TE_Msk | USART_CR1_RE));
@@ -31,6 +31,6 @@ typedef struct {
 void UART3_Configure(void);
 void UART_Prep(volatile UART_TX *uart_tx, volatile char *packet, uint8_t size);
 void UART_Transmit(volatile UART_TX *uart_tx);
-uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, uint8_t commands[], uint8_t *idx, uint8_t size);
+uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, volatile uint8_t commands[], volatile uint8_t *idx, uint8_t size);
 
 #endif

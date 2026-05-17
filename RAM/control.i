@@ -1980,14 +1980,14 @@ void delay_software_us(uint32_t);
 # 1 "./inc\\uart.h" 1
 # 17 "./inc\\uart.h"
 typedef struct {
- uint8_t queue [(20U)];
+ uint8_t queue [(3 * 12U)];
  uint8_t curPos;
  uint8_t emptyPos;
  uint8_t t_success;
 } UART_TX;
 
 typedef struct {
- uint8_t buffer [(20U)];
+ uint8_t buffer [(5 * 4U)];
  uint8_t curPos;
  uint8_t emptyPos;
  uint8_t state;
@@ -1996,7 +1996,7 @@ typedef struct {
 void UART3_Configure(void);
 void UART_Prep(volatile UART_TX *uart_tx, volatile char *packet, uint8_t size);
 void UART_Transmit(volatile UART_TX *uart_tx);
-uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, uint8_t commands[], uint8_t *idx, uint8_t size);
+uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, volatile uint8_t commands[], volatile uint8_t *idx, uint8_t size);
 # 9 "./inc\\control.h" 2
 # 1 "./inc\\comms.h" 1
 # 40 "./inc\\comms.h"
@@ -2005,7 +2005,8 @@ void ASCII_Extract(volatile float *t_Val, volatile char t_ASCII[]);
 void create_HMS_to_PC_Packet(volatile uint8_t o_light, volatile uint8_t o_heater, volatile uint8_t o_fan,
                volatile uint8_t o_cooling, volatile char temperatASCII[], volatile char *packet);
 
-uint8_t validate_CTRL_Packet(uint8_t byte, uint8_t buffer[]);
+
+uint8_t validate_CTRL_Packet(volatile uint8_t byte, volatile uint8_t buffer[]);
 # 10 "./inc\\control.h" 2
 # 1 "./inc\\adc.h" 1
 
@@ -2037,8 +2038,6 @@ uint8_t HMS_Poll_Fan_Switch(volatile uint8_t *o_fan_status, uint8_t hardware_upd
 void HMS_UART_Set_Light(volatile uint8_t *o_light_status, uint8_t uartLightCommand);
 void HMS_Poll_Light_Switch(volatile uint8_t *o_light_status);
 void configureSysTick(void);
-void configureGPIO_SW(void);
-void configureRCC_SW(void);
 # 12 "./inc\\control.h" 2
 # 30 "./inc\\control.h"
 typedef struct {
@@ -2072,31 +2071,34 @@ typedef struct {
 void Prepare_Msg_To_PC(volatile Outputs *outputs, volatile Sensors *sensors, volatile UART_TX *uart_tx);
 uint8_t Process_PC_CMD(volatile UART_RX *uart_rx, volatile Outputs *outputs);
 void AUTO_CONTROL(volatile Sensors *sensors, volatile Outputs *outputs);
-void Configure_Heater_Cooling_GPIO(void);
+
 void Hardware_Temperature_Control(volatile Outputs *outputs);
+
+void configureGPIO(void);
+void configureRCC(void);
 # 2 "src/control.c" 2
-# 13 "src/control.c"
+# 16 "src/control.c"
 void Prepare_Msg_To_PC(volatile Outputs *outputs, volatile Sensors *sensors, volatile UART_TX *uart_tx)
 {
- volatile char packet[10] = {0};
+ volatile char packet[(12U)] = {0};
  ASCII_Extract(&(sensors->temperature.Value), sensors->temperature.ASCII);
  create_HMS_to_PC_Packet(outputs->Light, outputs->Heater, outputs->Fan, outputs->Cooling, sensors->temperature.ASCII, packet);
 
- UART_Prep(uart_tx, packet, 10);
+ UART_Prep(uart_tx, packet, (12U));
 }
 
 
 
 uint8_t Process_PC_CMD(volatile UART_RX *uart_rx, volatile Outputs *outputs)
 {
- uint8_t commands[(11U)];
- uint8_t idx = 0;
+ volatile uint8_t commands[(11U)];
+ volatile uint8_t idx = 0;
  if (UART_Read_PC_Command(uart_rx, commands, &idx, (11U)) == 0) { return 0; }
 
 
- uint8_t buffer[5];
- uint8_t c_idx = 0;
- uint8_t valid_found = 0;
+ volatile uint8_t buffer[5];
+ volatile uint8_t c_idx = 0;
+ volatile uint8_t valid_found = 0;
  while ( (valid_found = validate_CTRL_Packet(commands[c_idx++], buffer)) == 0 && c_idx < idx);
 
  if (valid_found == 0) { return 0; }
@@ -2108,7 +2110,7 @@ uint8_t Process_PC_CMD(volatile UART_RX *uart_rx, volatile Outputs *outputs)
 
  return 1;
 }
-# 53 "src/control.c"
+# 56 "src/control.c"
 void AUTO_CONTROL(volatile Sensors *sensors, volatile Outputs *outputs)
 {
 
@@ -2135,43 +2137,9 @@ void AUTO_CONTROL(volatile Sensors *sensors, volatile Outputs *outputs)
 
 
 
-
-void Configure_Heater_Cooling_GPIO(void)
-{
-
-
-
- ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->AHB1ENR |= ((0x1U << (5U)) | (0x1U << (1U)));
-
-
- ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->AHB1RSTR |= ((0x1U << (5U)) | (0x1U << (1U)));
- __asm("NOP"); __asm("NOP");
-
-
- ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->AHB1RSTR &= ~((0x1U << (5U)) | (0x1U << (1U)));
- __asm("NOP"); __asm("NOP");
-
-
- ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->MODER &= ~((0x3U << (16U)));
- ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->MODER |= (0b01 << (16U));
- ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->OTYPER &= ~((0x1U << (8U)));
- ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->OSPEEDR &= ~((0x3U << (16U)));
- ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->PUPDR &= ~((0x3U << (16U)));
-
- ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->MODER &= ~((0x3U << (16U)));
- ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->MODER |= (0b01 << (16U));
- ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->OTYPER &= ~((0x1U << (8U)));
- ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->OSPEEDR &= ~((0x3U << (16U)));
- ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->PUPDR &= ~((0x3U << (16U)));
-
- ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->ODR |= (!(0U) << (8U));
- ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->ODR |= (!(0U) << (8U));
-}
-
 void Hardware_Temperature_Control(volatile Outputs *outputs)
 {
  FAN_SET(outputs->Fan);
-
  if (outputs->Cooling == 1)
  {
 
@@ -2193,4 +2161,61 @@ void Hardware_Temperature_Control(volatile Outputs *outputs)
 
   ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->ODR |= (0x1U << (8U));
  }
+}
+# 126 "src/control.c"
+void configureRCC(void)
+{
+ ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->AHB1ENR |= ((0x1U << (0U)) | (0x1U << (1U)) | (0x1U << (5U)));
+
+
+ ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->AHB1RSTR |= ((0x1U << (0U)) | (0x1U << (1U)) | (0x1U << (5U)));
+ __asm("NOP"); __asm("NOP");
+
+
+ ((RCC_TypeDef *) ((0x40000000U + 0x00020000U) + 0x3800U))->AHB1RSTR &= ~((0x1U << (0U)) | (0x1U << (1U)) | (0x1U << (5U)));
+ __asm("NOP"); __asm("NOP");
+}
+# 147 "src/control.c"
+void configureGPIO(void)
+{
+
+
+    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->MODER &= ~((0x3U << (20U)) | (0x3U << (18U)) | (0x3U << (16U)));
+    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->MODER |= (0x01 << (18U));
+
+
+    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->OTYPER &= ~((0x1U << (10U)) | (0x1U << (9U)) | (0x1U << (8U)) );
+
+
+    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->OSPEEDR &= ~((0x3U << (20U)) | (0x3U << (18U)) | (0x3U << (16U)));
+
+    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->PUPDR &= ~((0x3U << (20U)) | (0x3U << (18U)) | (0x3U << (16U)));
+    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0000U))->PUPDR |= (0x01 << (20U)) |
+                     (0x01 << (16U));
+
+
+
+    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->MODER &= ~((0x3U << (22U)) | (0x3U << (20U)) | (0x3U << (16U)) |
+      (0x3U << (2U)) | (0x3U << (0U)));
+
+    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->MODER |= (0x01 << (2U)) | (0x01 << (16U));
+
+    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->OTYPER &= ~((0x1U << (0U)) | (0x1U << (1U)) | (0x1U << (8U)));
+
+    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->OSPEEDR &= ~((0x3U << (0U)) | (0x3U << (2U)) | (0x3U << (16U)));
+
+    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->PUPDR &= ~((0x3U << (16U)) | (0x3U << (2U)) | (0x3U << (0U)));
+    ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->PUPDR |= (0x01 << (0U));
+
+
+
+ ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->MODER &= ~((0x3U << (16U)));
+ ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->MODER |= (0x01 << (16U));
+ ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->OTYPER &= ~((0x1U << (8U)));
+ ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->OSPEEDR &= ~((0x3U << (16U)));
+ ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->PUPDR &= ~((0x3U << (16U)));
+
+
+ ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x1400U))->ODR |= (!(0U) << (8U));
+ ((GPIO_TypeDef *) ((0x40000000U + 0x00020000U) + 0x0400U))->ODR |= (!(0U) << (8U));
 }

@@ -42,6 +42,7 @@ void ASCII_Extract(volatile float *t_Val, volatile char t_ASCII[]);
 void create_HMS_to_PC_Packet(volatile uint8_t o_light, volatile uint8_t o_heater, volatile uint8_t o_fan,
 															volatile uint8_t o_cooling, volatile char temperatASCII[], volatile char *packet);
 
-uint8_t validate_CTRL_Packet(uint8_t byte, uint8_t buffer[]);
+
+uint8_t validate_CTRL_Packet(volatile uint8_t byte, volatile uint8_t buffer[]);
 
 #endif
