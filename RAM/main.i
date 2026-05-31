@@ -2306,7 +2306,7 @@ void TIM6_Setup(void)
  ((TIM_TypeDef *) (0x40000000U + 0x1000U))->ARR &= ~((0xFFFFFFFFU << (0U)));
  ((TIM_TypeDef *) (0x40000000U + 0x1000U))->ARR |= (uint16_t)(((84000000U /((8399U) + 1))/(0.25f)));
 
- ((TIM_TypeDef *) (0x40000000U + 0x1000U))->CR1 |= TIM6_EGR_UG;
+ ((TIM_TypeDef *) (0x40000000U + 0x1000U))->CR1 |= (0x1U << (0U));
  ((TIM_TypeDef *) (0x40000000U + 0x1000U))->SR &= ~((0x1U << (0U)));
 
  ((TIM_TypeDef *) (0x40000000U + 0x1000U))->DIER |= (0b1 << (0U));
@@ -2339,7 +2339,7 @@ void TIM7_Setup(void)
  ((TIM_TypeDef *) (0x40000000U + 0x1400U))->ARR &= ~((0xFFFFFFFFU << (0U)));
  ((TIM_TypeDef *) (0x40000000U + 0x1400U))->ARR |= (uint16_t) ((84000000U / ((39999) + 1))/(0.1f));
 
- ((TIM_TypeDef *) (0x40000000U + 0x1400U))->CR1 |= TIM7_EGR_UG;
+ ((TIM_TypeDef *) (0x40000000U + 0x1400U))->CR1 |= (0x1U << (0U));
  ((TIM_TypeDef *) (0x40000000U + 0x1400U))->SR &= ~((0x1U << (0U)));
 
 

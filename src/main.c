@@ -270,8 +270,6 @@ void TIM6_Setup(void)
 	TIM6->ARR &= ~(TIM_ARR_ARR_Msk);					// Clear the auto reload register
 	TIM6->ARR |= TIM6_ONE_QUARTER_HZ_Count;
 
-	TIM6->CR1 |= TIM_EGR_UG; 	                        // An update event is needed to place value in prescaler register into the prescaler buffer
-	TIM6->SR &= ~(TIM_SR_UIF_Msk);                      // Clear the UIF flag after the UG set.  
 
 	TIM6->DIER |= (0b1 << TIM_DIER_UIE_Pos);			// 0b1 enables update event interrupt.
 
@@ -303,8 +301,6 @@ void TIM7_Setup(void)
 	TIM7->ARR &= ~(TIM_ARR_ARR_Msk);					// Clear the auto reload register
 	TIM7->ARR |= TIM7_TEN_SECOND_Count;
 
-	TIM7->CR1 |= TIM_EGR_UG; 	                        // An update event is needed to place value in prescaler register into the prescaler buffer
-	TIM7->SR &= ~(TIM_SR_UIF_Msk);                      // Clear the UIF flag after the UG set.  
 
 	// Need to enable the interrupt
 	TIM7->DIER |= (0b1 << TIM_DIER_UIE_Pos);			// 0b1 enables update event interrupt.
