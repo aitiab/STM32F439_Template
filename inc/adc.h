@@ -1,8 +1,8 @@
 #ifndef ADC_H
 #define ADC_H
 
-#define GRADIENT_SLOPE (90/(-4095))             // slope of linear function for converting ADC value to temperature
-#define INTERCEPT 55                            // intercept of linear function.
+#define GRADIENT_SLOPE (90.0f/(-4095.0f))             // slope of linear function for converting ADC value to temperature. Add 0.f to cast as float literal otherwise will be assumed as int which will result in 0.
+#define INTERCEPT 55.0f                            // intercept of linear function. Add 0.f to cast as float literal 
 
 
 #include <stdint.h>
