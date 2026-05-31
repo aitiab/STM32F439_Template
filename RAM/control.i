@@ -2009,14 +2009,7 @@ void create_HMS_to_PC_Packet(volatile uint8_t o_light, volatile uint8_t o_heater
 uint8_t validate_CTRL_Packet(volatile uint8_t byte, volatile uint8_t buffer[]);
 # 10 "./inc\\control.h" 2
 # 1 "./inc\\adc.h" 1
-
-
-
-
-
-
-
-
+# 12 "./inc\\adc.h"
 float Convert_ADC_to_Temperature(float ADC_Value);
 void ADC3_Setup(void);
 void Read_Potentiometer(volatile uint16_t *ADC_Value, volatile float *t_value);
@@ -2091,7 +2084,7 @@ void Prepare_Msg_To_PC(volatile Outputs *outputs, volatile Sensors *sensors, vol
 
 uint8_t Process_PC_CMD(volatile UART_RX *uart_rx, volatile Outputs *outputs)
 {
- volatile uint8_t commands[(11U)];
+ volatile uint8_t commands[(11U)] = {0};
  volatile uint8_t idx = 0;
  if (UART_Read_PC_Command(uart_rx, commands, &idx, (11U)) == 0) { return 0; }
 

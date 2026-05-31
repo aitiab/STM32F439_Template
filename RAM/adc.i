@@ -10,6 +10,9 @@
 
 
 
+
+
+
 # 1 "C:\\Users\\aiti7\\AppData\\Local\\Keil_v5\\ARM\\ARMCLANG\\bin\\..\\include\\stdint.h" 1 3
 # 56 "C:\\Users\\aiti7\\AppData\\Local\\Keil_v5\\ARM\\ARMCLANG\\bin\\..\\include\\stdint.h" 3
 typedef signed char int8_t;
@@ -64,7 +67,7 @@ typedef unsigned int uintptr_t;
 
 typedef signed long long intmax_t;
 typedef unsigned long long uintmax_t;
-# 6 "./inc\\adc.h" 2
+# 9 "./inc\\adc.h" 2
 # 1 "./inc\\boardSupport.h" 1
 # 12 "./inc\\boardSupport.h"
 # 1 "./inc\\stm32f439xx.h" 1
@@ -1975,7 +1978,7 @@ void boardSupport_init(void);
 
 void delay_software_ms(uint32_t);
 void delay_software_us(uint32_t);
-# 7 "./inc\\adc.h" 2
+# 10 "./inc\\adc.h" 2
 
 
 float Convert_ADC_to_Temperature(float ADC_Value);
@@ -2010,7 +2013,7 @@ void Read_Potentiometer(volatile uint16_t *ADC_Value, volatile float *t_value)
 float Convert_ADC_to_Temperature(float ADC_Value)
 {
 
- return (-0.02075702076 * ADC_Value) + 55;
+ return ((90/(-4095)) * ADC_Value) + 55;
 }
 
 

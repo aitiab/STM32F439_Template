@@ -2004,7 +2004,7 @@ uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, volatile uint8_t command
    return 0;
   }
 
-  volatile uint8_t header;
+  volatile uint8_t header = 0;
 
   volatile uint8_t found = 0;
   volatile uint8_t idx_incre = (5 * 4U);
@@ -2075,9 +2075,11 @@ void UART_Transmit(volatile UART_TX *uart_tx)
     uart_tx->curPos = 0;
     uart_tx->emptyPos = 0;
    }
+
+   time_out = 39375;
   }
 
-  time_out = 39375;
+
 
   while ((((USART_TypeDef *) (0x40000000U + 0x4800U))->SR & (0x1U << (6U))) == 0x00 && time_out > 0)
   { time_out--; }

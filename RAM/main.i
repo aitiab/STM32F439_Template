@@ -2014,14 +2014,7 @@ void create_HMS_to_PC_Packet(volatile uint8_t o_light, volatile uint8_t o_heater
 uint8_t validate_CTRL_Packet(volatile uint8_t byte, volatile uint8_t buffer[]);
 # 10 "./inc\\control.h" 2
 # 1 "./inc\\adc.h" 1
-
-
-
-
-
-
-
-
+# 12 "./inc\\adc.h"
 float Convert_ADC_to_Temperature(float ADC_Value);
 void ADC3_Setup(void);
 void Read_Potentiometer(volatile uint16_t *ADC_Value, volatile float *t_value);
@@ -2139,7 +2132,7 @@ int main(void)
 
  __enable_irq();
 
- (((USART_TypeDef *) (0x40000000U + 0x4800U))->CR1 |= ((0x1U << (13U)) | (0x1U << (3U)) | (0x1U << (2U))));;
+ (((USART_TypeDef *) (0x40000000U + 0x4800U))->CR1 |= ((0x1U << (13U)) | (0x1U << (3U)) | (0x1U << (2U))));
  (((TIM_TypeDef *) (0x40000000U + 0x1000U))->CR1 |= (0x1U << (0U)));
 
  FAN_SET(1U);
@@ -2313,10 +2306,14 @@ void TIM6_Setup(void)
  ((TIM_TypeDef *) (0x40000000U + 0x1000U))->ARR &= ~((0xFFFFFFFFU << (0U)));
  ((TIM_TypeDef *) (0x40000000U + 0x1000U))->ARR |= (uint16_t)(((84000000U /((8399U) + 1))/(0.25f)));
 
+ ((TIM_TypeDef *) (0x40000000U + 0x1000U))->CR1 |= TIM6_EGR_UG;
+ ((TIM_TypeDef *) (0x40000000U + 0x1000U))->SR &= ~((0x1U << (0U)));
+
  ((TIM_TypeDef *) (0x40000000U + 0x1000U))->DIER |= (0b1 << (0U));
 
 
 }
+
 
 
 void TIM7_Setup(void)
@@ -2338,9 +2335,12 @@ void TIM7_Setup(void)
 
  ((TIM_TypeDef *) (0x40000000U + 0x1400U))->CR1 &= ~((0x1U << (0U)));
  ((TIM_TypeDef *) (0x40000000U + 0x1400U))->PSC &= ~((0xFFFFU << (0U)));
- ((TIM_TypeDef *) (0x40000000U + 0x1400U))->PSC |= ((83999U));
+ ((TIM_TypeDef *) (0x40000000U + 0x1400U))->PSC |= ((39999));
  ((TIM_TypeDef *) (0x40000000U + 0x1400U))->ARR &= ~((0xFFFFFFFFU << (0U)));
- ((TIM_TypeDef *) (0x40000000U + 0x1400U))->ARR |= (uint16_t) ((84000000U / ((83999U) + 1))/(0.1f));
+ ((TIM_TypeDef *) (0x40000000U + 0x1400U))->ARR |= (uint16_t) ((84000000U / ((39999) + 1))/(0.1f));
+
+ ((TIM_TypeDef *) (0x40000000U + 0x1400U))->CR1 |= TIM7_EGR_UG;
+ ((TIM_TypeDef *) (0x40000000U + 0x1400U))->SR &= ~((0x1U << (0U)));
 
 
  ((TIM_TypeDef *) (0x40000000U + 0x1400U))->DIER |= (0b1 << (0U));
