@@ -246,7 +246,7 @@ void TIM6_DAC_IRQHandler(void)
 //=====================================FUNCTION TIM6 DAC IRQHANDLER END=====================================//
 
 
-
+// Should be called before interrupt are enabled to prevent issues with EGR_UG causing unintended behaviour
 void TIM6_Setup(void)
 {
 	// Enable TIMER 6 on APB1 Bus.
@@ -270,12 +270,16 @@ void TIM6_Setup(void)
 	TIM6->ARR &= ~(TIM_ARR_ARR_Msk);					// Clear the auto reload register
 	TIM6->ARR |= TIM6_ONE_QUARTER_HZ_Count;
 
+	TIM6->CR1 |= TIM6_EGR_UG; 	                        // An update event is needed to place value in prescaler register into the prescaler buffer
+	TIM6->SR &= ~(TIM_SR_UIF_Msk);                      // Clear the UIF flag after the UG set.  
+
 	TIM6->DIER |= (0b1 << TIM_DIER_UIE_Pos);			// 0b1 enables update event interrupt.
 
 	// When handling the interrupt, the UIF update interrupt flag must be set to 0 by software.
 }
 
 
+// Should be called before interrupt are enabled to prevent issues with EGR_UG causing unintended behaviour
 void TIM7_Setup(void)
 {
 	// Enable TIMER 7 on APB1 Bus.
@@ -298,6 +302,9 @@ void TIM7_Setup(void)
 	TIM7->PSC |= (TIM7_PRESCALER);						// Set prescaler. Remember final prescaler that divides the source clock is PSC + 1
 	TIM7->ARR &= ~(TIM_ARR_ARR_Msk);					// Clear the auto reload register
 	TIM7->ARR |= TIM7_TEN_SECOND_Count;
+
+	TIM7->CR1 |= TIM7_EGR_UG; 	                        // An update event is needed to place value in prescaler register into the prescaler buffer
+	TIM7->SR &= ~(TIM_SR_UIF_Msk);                      // Clear the UIF flag after the UG set.  
 
 	// Need to enable the interrupt
 	TIM7->DIER |= (0b1 << TIM_DIER_UIE_Pos);			// 0b1 enables update event interrupt.

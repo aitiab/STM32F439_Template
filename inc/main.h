@@ -28,8 +28,8 @@
 #define TIM6_PRESCALER (8399U)
 #define EXPECTED_COUNT_CLOCK_TIM6 (84000000U /(TIM6_PRESCALER + 1)) // 10kHz count clock
 
-#define TIM7_PRESCALER (83999U)		// TIM7 Prescaler
-#define EXPECTED_COUNT_CLOCK_TIM7 (84000000U / (TIM7_PRESCALER + 1))		// 1kHz count clock
+#define TIM7_PRESCALER (39999)		// TIM7 Prescaler
+#define EXPECTED_COUNT_CLOCK_TIM7 (84000000U / (TIM7_PRESCALER + 1))		// 2.1kHz count clock
 
 #define TIM6_TARGET_FREQUENCY (0.25f)
 #define TIM6_ONE_QUARTER_HZ_Count (uint16_t)((EXPECTED_COUNT_CLOCK_TIM6/TIM6_TARGET_FREQUENCY))							// Ticks required = Clock frequency / Target frequency

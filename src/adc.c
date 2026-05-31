@@ -27,7 +27,7 @@ void Read_Potentiometer(volatile uint16_t *ADC_Value, volatile float *t_value)
 float Convert_ADC_to_Temperature(float ADC_Value)
 {
 	// A linear relationship between ADC value between 0 and 4095 and temperature between 55C and -30C
-	return (-0.02075702076 * ADC_Value) + 55;
+	return (GRADIENT_SLOPE * ADC_Value) + INTERCEPT;
 }
 //=====================================FUNCTION CONVERT ADC TO TEMPERATURE START================================================================//
 

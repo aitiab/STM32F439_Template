@@ -1,6 +1,9 @@
 #ifndef ADC_H
 #define ADC_H
 
+#define GRADIENT_SLOPE (90/(-4095))             // slope of linear function for converting ADC value to temperature
+#define INTERCEPT 55                            // intercept of linear function.
+
 
 #include <stdint.h>
 #include "boardSupport.h"
