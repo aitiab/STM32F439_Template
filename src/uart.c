@@ -96,10 +96,10 @@ void UART_Transmit(volatile UART_TX *uart_tx)
 				uart_tx->emptyPos = 0;
 			}
 
-			time_out = 39375; 																					// Reset time_out only if the previous time_out had not expired
+			time_out = 39375; 	// Reset time_out only if the previous time_out had not expired
 		}
 		
-		
+																						
 		
 		while ((USART3->SR & USART_SR_TC) == 0x00 && time_out > 0) 
 		{ time_out--; }
