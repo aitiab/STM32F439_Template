@@ -159,7 +159,7 @@
           <Type>0</Type>
           <LineNumber>84</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>536876200</Address>
+          <Address>536876152</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -223,6 +223,11 @@
           <WinNumber>1</WinNumber>
           <ItemText>idx</ItemText>
         </Ww>
+        <Ww>
+          <count>7</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>ADC_Value</ItemText>
+        </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>
@@ -236,7 +241,7 @@
         <Mm>
           <WinNumber>2</WinNumber>
           <SubType>0</SubType>
-          <ItemText>0x40004800</ItemText>
+          <ItemText>0x4001224C</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow2>

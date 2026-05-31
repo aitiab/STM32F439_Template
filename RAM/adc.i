@@ -2013,7 +2013,7 @@ void Read_Potentiometer(volatile uint16_t *ADC_Value, volatile float *t_value)
 float Convert_ADC_to_Temperature(float ADC_Value)
 {
 
- return ((90/(-4095)) * ADC_Value) + 55;
+ return ((90.0f/(-4095.0f)) * ADC_Value) + 55.0f;
 }
 
 
