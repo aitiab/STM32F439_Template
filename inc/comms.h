@@ -1,3 +1,11 @@
+/********************************************
+*			Comms Subsystem   			
+*			Developed for the STM32								
+*			Author: Aitazaz					
+*			Header File														
+*    		Updated: 03/06/2026 	  							
+********************************************/
+
 #ifndef COMMS_H
 #define COMMS_H
 
@@ -28,12 +36,15 @@
 #define FAN_Bit_Msk (1 << FAN_Bit_Pos)						// 0b0000 1000
 //================================ COMMUNICATION PROTOCOL PACKET DEFINES END ================================//
 
+
+//================================ COMMUNICATION FLAGS DEFINES START ================================//
+// Below are defines useful for setting the COMM_FLAG to indicate when update to PC packet should be made, and when a command has been received from PC.
 #define SEND_UPDATE_TO_PC_Pos (0U)
 #define	SEND_UPDATE_TO_PC_Msk (1 << SEND_UPDATE_TO_PC_Pos)						// 0b0001
 
 #define RECIEVE_CMD_FROM_PC_Pos (1U)
 #define RECIEVE_CMD_FROM_PC_Msk (1 << RECIEVE_CMD_FROM_PC_Pos)		// 0b0010
-
+//================================ COMMUNICATION FLAGS DEFINES END ================================//
 
 
 

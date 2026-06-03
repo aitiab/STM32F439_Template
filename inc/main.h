@@ -1,8 +1,9 @@
 /********************************************
-*			STM32F439 Main (C Header File)  			*
-*			Developed for the STM32								*
-*			Author: Dr. Glenn Matthews						*
-*			Header File														*
+*			STM32F439 Main (C Header File)  			
+*			Developed for the STM32								
+*			Author: Dr. Glenn Matthews
+*			Modified by: Aitazaz 					
+*			Header File														
 ********************************************/
 
 
@@ -51,6 +52,8 @@
 
 //================================ FLAGS DEFINES END ================================//
 
+
+// Macros for enabling and disabling timers.
 #define TIM6_ENABLE   (TIM6->CR1 |= TIM_CR1_CEN_Msk)
 #define TIM7_ENABLE   (TIM7->CR1 |= TIM_CR1_CEN_Msk)
 #define TIM7_Disable  (TIM7->CR1 &= ~(TIM_CR1_CEN_Msk))

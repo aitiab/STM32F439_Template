@@ -1,6 +1,18 @@
+/********************************************
+*			Comms Subsystem   			
+*			Developed for the STM32								
+*			Author: Aitazaz					
+*			Source File														
+*    		Updated: 03/06/2026 	  							
+********************************************/
+
 #include "comms.h"
 
-
+//=====================================FUNCTION CONVERT ADC TO TEMPERATURE START================================================================//
+// Function: validate_CTRL_Packet
+// Description: Given a command byte it validates it meets the format requirements. It extracts the different bits for each output
+// Input: the byte to analyse, and an array passed as reference to store the extracted bits for each output.
+// Output: Returns 1 if valid command byte found. 0 if not valid. The array passed as reference is updated with the extracted bits for each output.
 uint8_t validate_CTRL_Packet(volatile uint8_t byte, volatile uint8_t buffer[])
 {
 	if ((byte & 0b11000011) != INPUT_PACKET_FORMAT)
@@ -21,7 +33,7 @@ uint8_t validate_CTRL_Packet(volatile uint8_t byte, volatile uint8_t buffer[])
 
 //=====================================FUNCTION CONVERT ADC TO TEMPERATURE START================================================================//
 // Function: create_HMS_to_PC_Packet
-// Description: Generates the packet for HMS to PC communication
+// Description: Generates the packet for HMS to PC communication. Also known as update to PC packet.
 // Input: The pointer to the Outputs struct.
 // Output: Updates the packet array passed as reference.
 void create_HMS_to_PC_Packet(volatile uint8_t o_light, volatile uint8_t o_heater, volatile uint8_t o_fan,

@@ -1,8 +1,16 @@
+/********************************************
+*			Control Subsystem   			
+*			Developed for the STM32								
+*			Author: Aitazaz					
+*			Source File														
+*    		Updated: 03/06/2026 	  							
+********************************************/
+
 #include "control.h"
 
 
+// Defines for update to pc packet size, commands array and total packet size (including CR LF)
 #define COMMANDS_ARRAY_SIZE 	(11U)
-
 #define PACKET_SIZE 			(10U)
 #define TOTAL_PACKET_SIZE 		(12U)   // 10 for packet, 2 for CR LF
 
@@ -23,7 +31,11 @@ void Prepare_Msg_To_PC(volatile Outputs *outputs, volatile Sensors *sensors, vol
 }
 //=====================================FUNCTION UPDATE TO PC END================================================================//
 
-
+//=====================================FUNCTION PROCESS PC COMMAND START================================================================//
+// Function: Process_PC_CMD
+// Description: Orchestrates UART and comms functions to process commands sent to the PC
+// Input: The UART_RX buffer and the Outputs struct to update when a valid command is found.
+// Output: 1 if a valid command was processed.  0 otherwise
 uint8_t Process_PC_CMD(volatile UART_RX *uart_rx, volatile Outputs *outputs)
 {
 	volatile uint8_t commands[COMMANDS_ARRAY_SIZE] = {0};	// Array to store the command bytes in the rx buffer.
@@ -45,7 +57,7 @@ uint8_t Process_PC_CMD(volatile UART_RX *uart_rx, volatile Outputs *outputs)
 	
 	return 1;
 }
-
+//=====================================FUNCTION PROCESS PC COMMAND END================================================================//
 
 
 //=====================================FUNCTION AUTO CONTROL START=====================================//

@@ -1,10 +1,10 @@
-
 /********************************************
-*			STM32F439 Main (C Startup File)  			*
-*			Developed for the STM32								*
-*			Author: Dr. Glenn Matthews						*
-*			Source File														*
-*     Updated: 04/03/2026 	  							*
+*			STM32F439 Main (C Startup File)  			
+*			Developed for the STM32							
+*			Author: Dr. Glenn Matthews
+*			Modified by: Aitazaz (90%)						
+*			Source File														
+*     		Updated: 03/06/2026 	  							
 ********************************************/
 
 #include <stdint.h>
@@ -13,7 +13,6 @@
 
 
 // Global variables. Can be accessed without needing to explicitly pass into the function
-
 volatile UART_TX uart_tx = {{0},0,0,0};
 volatile UART_RX uart_rx = {{0},0,0, 0};
 
@@ -23,7 +22,7 @@ volatile Outputs outputs = {HEATER_INITAL_STATE, COOLING_INITAL_STATE, FAN_INITI
 volatile Sensors sensors = {{0,0,{0}}, 0};				// Initialise Sensors struct. Set default state at 0. The inner {0,0,{0}} is for the temperature struct inside.
 // volatile Switches switches = {0, 0}; 				// Initialise Switches struct. Set default state at off (0).
 
-volatile uint8_t COMM_FLAG = 0;
+volatile uint8_t COMM_FLAG = 0;							// Flag for communication. Used to indicate when update to PC packet should be made, and when a command has been recieved.
 
 volatile uint8_t CONTROL_MODE_FLAG = CONTROL_AUTO_MODE_Msk;				// Flags for determining control mode. initally set to AUTO MODE.
 volatile uint8_t TIM7_RUNNING_FLAG = 0b0000;						// Flags for determining why timer TIM7 is running
@@ -90,7 +89,6 @@ int main(void)
 		
 		
 		/*
-			Below code is reminding the program to generate the packet for communicating the HMS status to the PC.
 			The SEND_UPDATE_TO_PC flag is toggled to 1 by TIM6's update event interrupt.
 			It will create the packet from the Outputs struct. Therefore it is **important** that when output states are changed, the outputs struct is updated.
 			The packet is send the UART_TX's queue. Which will be transmitted in the section above.
@@ -112,7 +110,7 @@ int main(void)
 		HMS_Poll_Light_Switch(&outputs.Light);
 		
 		/*
-			Below contains the logic for processing the control commands send by PC.
+			Below contains the logic for processing the control commands sent by PC.
 			As a control command will have control over the HMS for 10 seconds, the program will not process any new commands recieved in that period.
 			However, data recieved is saved to the buffer. Which circles around itself.
 			However when the 10 seconds is over, the program will process the first valid command in its buffer.
@@ -140,7 +138,11 @@ int main(void)
 			}
 		}
 		
-		
+
+		/* The program default to auto mode when not in UART control mode. When in UART mode the auto control mode flag is off.
+		   When UART mode expires, the auto mode flag is turned back on.
+		*/
+	
 		if (CONTROL_MODE_FLAG & CONTROL_AUTO_MODE_Msk)											// If in AUTO MODE 
 		{
 			// The fan is on default unless the fan off timer is on.

@@ -1,5 +1,19 @@
+/********************************************
+*			UART Subsystem   			
+*			Developed for the STM32								
+*			Author: Aitazaz					
+*			Source File														
+*    		Updated: 03/06/2026 	  							
+********************************************/
 
 #include "uart.h"
+
+//=====================================FUNCTION UART READ PC COMMAND START================================================================//
+// Function: UART_Read_PC_Command
+// Description: Also known as UART Search for PC Commands. It searches through the UART_RX buffer for CTRL command bytes. It stores all command bytes it finds 
+// Input: It needs the RX buffer to search through, an array to store the commands bytes it finds, 
+//		  an index (passed as reference) for iterating through the commands array, and the size of the commands array.
+// Output: Return 1 when successfully finds at least 1 command byte, 0 if any error or not successful. It updates the arrays and index passesd as reference.
 uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, volatile uint8_t commands[], volatile uint8_t *idx, uint8_t size)
 {	
 		if ((uart_rx->emptyPos - uart_rx->curPos) < 2)												// Check in case the next two elements do exist
@@ -38,7 +52,7 @@ uint8_t UART_Read_PC_Command(volatile UART_RX *uart_rx, volatile uint8_t command
 		
     return 1;
 }
-
+//=====================================FUNCTION UART READ PC COMMAND END================================================================//
 
 
 //=====================================FUNCTION UART PREP START================================================================//

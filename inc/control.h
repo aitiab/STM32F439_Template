@@ -1,3 +1,11 @@
+/********************************************
+*			Control Subsystem   			
+*			Developed for the STM32								
+*			Author: Aitazaz					
+*			Header File														
+*    		Updated: 03/06/2026 	  							
+********************************************/
+
 #ifndef CONTROL_H
 #define CONTROL_H
 

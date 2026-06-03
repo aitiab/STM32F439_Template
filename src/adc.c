@@ -1,3 +1,11 @@
+/********************************************
+*			ADC Subsystem   			
+*			Developed for the STM32								
+*			Author: Aitazaz					
+*			Source File														
+*    		Updated: 03/06/2026 	  							
+********************************************/
+
 #include "adc.h"
 
 void Read_Potentiometer(volatile uint16_t *ADC_Value, volatile float *t_value)

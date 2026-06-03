@@ -1,6 +1,7 @@
 /********************************************
 *       Spec 3b Switch Debounce & Toggle  *
 *       Authors: Ken Navarro     *
+*       Modified by: Aitazaz, Fatin					*
 ********************************************/
 
 #include "switches.h"
@@ -12,7 +13,7 @@
 #define UART_LIGHT_PRIORITY_MS 10000U
 
 // ============================================================
-// GPIO INPUT MACROS (active low � pressed = 0 on pin = 1 here)
+// GPIO INPUT MACROS (active low pressed = 0 on pin = 1 here)
 // ============================================================
 #define SW_LIGHT_PRESSED()  (!(GPIOA->IDR & GPIO_IDR_ID10))  // PA10 SW4
 #define SW_LUX_PRESSED()    (!(GPIOA->IDR & GPIO_IDR_ID8))   // PA8  SW2
@@ -69,7 +70,7 @@ void SysTick_Handler(void)
     g_msTick++;
 }
 // ============================================================
-// POLLSWITCH debounce and lockout logi
+// POLLSWITCH debounce and lockout logic
 // Returns 1 on valid press, 0 otherwise
 // ============================================================
 static uint8_t PollSwitch(SwitchCtx_t *sw, uint8_t currentlyPressed)
@@ -141,7 +142,7 @@ uint8_t HMS_Poll_Fan_Switch(volatile uint8_t *o_fan_status, uint8_t hardware_upd
 
 
 // ============================================================
-// HMS_POLL_LIGHT_SWITC pure toggle logic only for light
+// HMS_POLL_LIGHT_SWITCH pure toggle logic only for light
 // ============================================================
 // Also updates the fan and light status flags provided. This is because the internal flags are private.
 
